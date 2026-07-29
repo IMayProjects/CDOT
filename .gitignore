@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Local & Environment Configuration
+.env
+.env.local
+.env.*.local
+
+# Clasp / Apps Script Local Credentials
+.clasp.json
+.clasprc.json
+
+# IDE / Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+
+# Agent Artifacts
+.agent-artifacts/

@@ -1,0 +1,22 @@
+# Ignore everything by default
+**
+
+# Allow Apps Script JS source files
+!*.js
+
+# Allow Apps Script HTML UI files
+!*.html
+
+# Allow Apps Script project manifest
+!appsscript.json
+
+# Explicitly ignore Node.js & local development files
+node_modules/**
+package.json
+package-lock.json
+server.js
+.gitignore
+.clasp.json
+.clasprc.json
+README.md
+.agent-artifacts/**

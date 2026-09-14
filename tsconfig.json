@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ES2019",
+        "module": "ES2020",
+        // "outFile": "./dist/code.js",
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "lib": [
+            "ES2022"
+        ],
+        "types": [
+            "google-apps-script"
+        ],
+        "skipLibCheck": true,
+        "noImplicitAny": true,
+        // Added
+        "strictNullChecks": false,
+        "declaration": true,
+        "declarationDir": "./build/types"
+    },
+    "include": [
+        "src/**/*",
+    ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "cdot",
+  "version": "1.0.0",
+  "description": "Google Apps Script project with AdminDirectory autocompletion",
+  "main": "Code.js",
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.100",
+    "typescript": "^7.0.2"
+  }
+}

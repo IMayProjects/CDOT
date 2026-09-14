@@ -2,10 +2,10 @@
 **
 
 # Allow Apps Script JS source files
-!*.js
+!dist/*.js
 
 # Allow Apps Script HTML UI files
-!*.html
+!dist/*.html
 
 # Allow Apps Script project manifest
 !appsscript.json

@@ -15,7 +15,8 @@ node_modules/
 .idea/
 *.swp
 *.swo
-
+/dist/
+/build/
 # OS Generated Files
 .DS_Store
 Thumbs.db

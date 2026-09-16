@@ -1,5 +1,6 @@
 import { DeviceRepository } from "./DeviceReposirotyFile";
 import { DevicesService } from "./DevicesServiceFile";
+import { AppLogger } from "./logger";
 
 const CONTINUATION_TOKEN_KEY = "DEVICE_MIGRATION_START_INDEX";
 // 4.5 minutes in milliseconds
@@ -28,24 +29,25 @@ export class DeviceProcessorService {
       startIndex = parseInt(token, 10);
     }
 
-    const allRecords = this.repository.getAllRecords();
+    const allSamples = this.repository.getAllProcessorRecords();
 
     // If we've processed all records, clear token and exit.
-    if (startIndex >= allRecords.length) {
-      Logger.log("All records have been processed. Clearing token.");
+    if (startIndex >= allSamples.length) {
+      AppLogger.info1("All records have been processed. Clearing token.");
       properties.deleteProperty(CONTINUATION_TOKEN_KEY);
       return;
     }
 
     let i = startIndex;
-    for (; i < allRecords.length; i++) {
-      const record = allRecords[i];
+    for (; i < allSamples.length; i++) {
+      const record = allSamples[i];
 
       // If paths don't match, the device needs to be moved
       if (record.currentOrgUnitPath !== record.targetOrgUnitPath) {
         if (record.deviceId && record.targetOrgUnitPath) {
+          // why is this nested??
           try {
-            Logger.log(
+            AppLogger.info2(
               `Moving device ${record.deviceId} to ${record.targetOrgUnitPath}`,
             );
             this.devicesService.moveDeviceToOrgUnit(
@@ -53,13 +55,36 @@ export class DeviceProcessorService {
               record.targetOrgUnitPath,
             );
 
-            Logger.log(`Successfully moved and updated ${record.serialNumber}`);
+            // Check if the move was successful by querying OU from AdminDirectory
+            const updatedDevice = this.devicesService.getDeviceByDeviceId(
+              record.deviceId,
+            );
+            if (
+              updatedDevice &&
+              updatedDevice.orgUnitPath === record.targetOrgUnitPath
+            ) {
+              // Replace current OU with return value from AdminDirectory
+              this.repository.updateCurrentOU(
+                record.serialNumber,
+                updatedDevice.orgUnitPath,
+              );
+              AppLogger.info1(
+                `Successfully moved and updated ${record.serialNumber}`,
+              );
+            } else {
+              AppLogger.warn(
+                `Move verification failed for ${record.serialNumber}. Current OU is ${updatedDevice?.orgUnitPath}`,
+              );
+            }
           } catch (e: any) {
-            Logger.log(`Error moving device ${record.deviceId}: ${e.message}`);
+            AppLogger.error(
+              `Error moving device ${record.deviceId}: ${e.message}`,
+              e,
+            );
             // Could log error to a sheet or continue
           }
         } else {
-          Logger.log(
+          AppLogger.warn(
             `Missing deviceId or targetOrgUnitPath for serial: ${record.serialNumber}`,
           );
         }
@@ -67,7 +92,7 @@ export class DeviceProcessorService {
 
       // Check if we are approaching the 6-minute execution limit
       if (Date.now() - startTime > MAX_EXECUTION_TIME_MS) {
-        Logger.log(
+        AppLogger.info1(
           `Approaching execution time limit. Saving continuation token at index ${i + 1}.`,
         );
         properties.setProperty(CONTINUATION_TOKEN_KEY, (i + 1).toString());
@@ -77,7 +102,7 @@ export class DeviceProcessorService {
     }
 
     // Finished processing all records without hitting the time limit
-    Logger.log("Finished processing all records in this batch.");
+    AppLogger.info1("Finished processing all records in this batch.");
     properties.deleteProperty(CONTINUATION_TOKEN_KEY);
   }
 

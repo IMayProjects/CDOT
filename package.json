@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "Google Apps Script project with AdminDirectory autocompletion",
   "main": "Code.js",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "push": "npm run build && npx.cmd clasp push"
+  },
   "devDependencies": {
     "@types/google-apps-script": "^1.0.100",
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   }
 }

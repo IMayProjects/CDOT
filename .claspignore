@@ -1,20 +1,21 @@
 # Ignore everything by default
-**
+**/**
 
 # Allow Apps Script JS source files
-!*.js
+!**/*.js
 
 # Allow Apps Script TS source files
-!*.ts
+**/*.ts
 
 # Allow Apps Script HTML UI files
-!*.html
+!**/*.html
 
 # Allow Apps Script project manifest
 !appsscript.json
 
 # Explicitly ignore Node.js & local development files
 node_modules/**
+scripts/**
 package.json
 tsconfig.json
 package-lock.json

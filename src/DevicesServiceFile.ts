@@ -6,6 +6,7 @@ import {
   DeviceRecordsSheetColumn,
   DeviceRecordsTitleRow,
 } from "./DeviceRecordFile";
+import { SchoolRecord } from "./SchoolRecordFile";
 
 export class DevicesService {
   private repo: DeviceRepository;
@@ -35,7 +36,27 @@ export class DevicesService {
   getAllRecords(): DeviceRecord[] {
     return this.repo.getAllRecords();
   }
+  getSchoolRecords(emisNumbers: string[]): SchoolRecord[] {
+    const trimmedEmis = Array.from(new Set(emisNumbers.map((e) => e.trim())));
+    const allMatchingRecords = this.getRecordsByEmisNumber(trimmedEmis);
 
+    const recordsByEmis: Record<string, DeviceRecord[]> = {};
+    for (const record of allMatchingRecords) {
+      if (!recordsByEmis[record.emisNumber]) {
+        recordsByEmis[record.emisNumber] = [];
+      }
+      recordsByEmis[record.emisNumber].push(record);
+    }
+
+    return trimmedEmis.map((emis) => {
+      const records = recordsByEmis[emis] || [];
+      return {
+        emis: emis,
+        schoolName: records.length > 0 ? records[0].schoolName : "",
+        values: records,
+      };
+    });
+  }
   getRecordsBySchool(emisNumbers: string[]): DeviceRecord[] {
     const records = this.repo
       .getAllRecords()

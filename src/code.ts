@@ -1,21 +1,19 @@
 import { DeviceProcessorService } from "./processor";
 import { DevicesService } from "./DevicesServiceFile";
 import { DeviceRepository } from "./DeviceReposirotyFile";
+import { DeviceRecord } from "./DeviceRecordFile";
+import { SchoolRecord } from "./SchoolRecordFile";
 
-function myFunction() {
-  let records = DevicesService.getInstance().getRecordsBySerialNumber([
-    "YX0BB42Z",
-    "PF5PH350",
-  ]);
-  for (const record of records) {
-    console.log(JSON.stringify(record));
-  }
-}
+/**
+ * Gets devices for a specific school (EMIS number)
+ * @param {string} emis - EMIS number of the school
+ * @returns {Object} Object with device data
+ */
 
 /**
  * Entry point for the time-driven trigger to migrate devices.
  */
-function runDeviceMigration() {
+export function runDeviceMigration() {
   const processor = new DeviceProcessorService();
 
   // We need to delete the current trigger that invoked this function

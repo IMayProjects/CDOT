@@ -32,54 +32,36 @@ export class DevicesService {
     return AdminDirectory.Chromeosdevices.get(customer_id, device_id);
   }
 
-  getRecordsBySchool(eminsNumbers: string[]) {}
+  getAllRecords(): DeviceRecord[] {
+    return this.repo.getAllRecords();
+  }
+
+  getRecordsBySchool(emisNumbers: string[]): DeviceRecord[] {
+    const records = this.repo
+      .getAllRecords()
+      .filter((rec) => emisNumbers.includes(rec.emisNumber));
+    return records;
+  }
 
   getRecordsBySerialNumber(serialNumbers: string[]): DeviceRecord[] {
-    const values = SpreadsheetApp.getActiveSpreadsheet()
-      .getSheetByName(DeviceRecordsSheetName)
-      .getDataRange()
-      .getValues()
-      .slice(DeviceRecordsTitleRow)
-      .filter((rec) =>
-        serialNumbers.includes(rec[DeviceRecordsSheetColumn.SERIAL_NUMBER]),
-      );
-
-    let records = values.map((row) => {
-      return {
-        serialNumber: row[DeviceRecordsSheetColumn.SERIAL_NUMBER],
-        emisNumber: row[DeviceRecordsSheetColumn.EMIS_NUMBER],
-        schoolName: row[DeviceRecordsSheetColumn.SCHOOL_NAME],
-        district: row[DeviceRecordsSheetColumn.DISTRICT],
-        deviceId: row[DeviceRecordsSheetColumn.DEVICE_ID],
-        currentOrgUnitPath: row[DeviceRecordsSheetColumn.CURRENT_OU_PATH],
-        targetOrgUnitPath: row[DeviceRecordsSheetColumn.TARGET_OU_PATH],
-        isSample: row[DeviceRecordsSheetColumn.IS_SAMPLE],
-      };
-    });
+    const records = this.repo
+      .getAllRecords()
+      .filter((rec) => serialNumbers.includes(rec.serialNumber));
     return records;
   }
 
   getRecordsByEmisNumber(emisNumbers: string[]) {
-    const values = SpreadsheetApp.getActiveSpreadsheet()
-      .getSheetByName(DeviceRecordsSheetName)
-      .getDataRange()
-      .getValues()
-      .filter((row) =>
-        emisNumbers.includes(String(row[DeviceRecordsSheetColumn.EMIS_NUMBER])),
-      );
+    const records = this.repo
+      .getAllRecords()
+      .filter((rec) => emisNumbers.includes(rec.emisNumber));
 
-    let records = values.slice(DeviceRecordsTitleRow).map((row) => {
-      return {
-        serialNumber: row[DeviceRecordsSheetColumn.SERIAL_NUMBER],
-        emisNumber: row[DeviceRecordsSheetColumn.EMIS_NUMBER],
-        schoolName: row[DeviceRecordsSheetColumn.SCHOOL_NAME],
-        district: row[DeviceRecordsSheetColumn.DISTRICT],
-        deviceId: row[DeviceRecordsSheetColumn.DEVICE_ID],
-        currentOrgUnitPath: row[DeviceRecordsSheetColumn.CURRENT_OU_PATH],
-        targetOrgUnitPath: row[DeviceRecordsSheetColumn.TARGET_OU_PATH],
-        isSample: row[DeviceRecordsSheetColumn.IS_SAMPLE],
-      };
-    });
+    return records;
+  }
+
+  getRecordsByDeviceIds(deviceIds: string[]) {
+    const records = this.repo
+      .getAllRecords()
+      .filter((rec) => deviceIds.includes(rec.deviceId));
     return records;
   }
   /**

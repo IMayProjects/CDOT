@@ -1,11 +1,12 @@
 export const DeviceRecordsSheetName = "device_records";
+export const ProcessorRecordsSheetName = "filtered_device_records";
 export const DeviceRecordsTitleRow = 1;
 export const DeviceRecordsSheetColumn = {
-  EMIS_NUMBER: 0,
-  SERIAL_NUMBER: 1,
-  DEVICE_ID: 2,
-  SCHOOL_NAME: 3,
-  DISTRICT: 4,
+  SERIAL_NUMBER: 0,
+  EMIS_NUMBER: 1,
+  DEVICE_ID: 4,
+  SCHOOL_NAME: 2,
+  DISTRICT: 3,
   CURRENT_OU_PATH: 5,
   TARGET_OU_PATH: 6,
   IS_SAMPLE: 7,

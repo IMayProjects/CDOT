@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --border: #334155;
+      --header-bg: #0b1120;
+    }
+
+    /* Light Theme Overrides */
+    [data-theme="light"] {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --header-bg: #f1f5f9;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background-color: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 4px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .icon-btn:hover {
+      background-color: var(--border);
+      color: var(--text-main);
+    }
+
+    /* Views */
+    .view-container {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .view-container.active {
+      display: flex;
+    }
+
+    /* Tabs Header */
+    .tabs-header {
+      display: flex;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0 10px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 16px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.3s ease;
+      outline: none;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--primary);
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Skeleton placeholders */
+    .skeleton-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .skeleton-title {
+      height: 20px;
+      width: 40%;
+      background: linear-gradient(90deg, var(--border) 25%, #475569 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .skeleton-line {
+      height: 12px;
+      background: linear-gradient(90deg, var(--border) 25%, #475569 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    
+    .skeleton-line.short {
+      width: 70%;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    
+    /* Preferences specific */
+    .pref-group {
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .pref-group label {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    
+    .pref-group select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: inherit;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <div class="top-nav">
+    <h1 class="nav-title">CDOT Tools</h1>
+    <button class="icon-btn" id="nav-btn" onclick="toggleView()" title="Preferences">
+      <!-- Gear Icon -->
+      <svg id="gear-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <!-- Back Arrow Icon (Hidden initially) -->
+      <svg id="back-icon" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Main View -->
+  <div id="main-view" class="view-container active">
+    <!-- Tabs Navigation -->
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="openTab(event, 'Schools')">Schools</button>
+      <button class="tab-btn" onclick="openTab(event, 'Devices')">Devices</button>
+      <button class="tab-btn" onclick="openTab(event, 'OUs')">OUs</button>
+    </div>
+
+    <!-- Tabs Content -->
+    <div class="content-area">
+      <!-- Schools Tab -->
+      <div id="Schools" class="tab-content active">
+        <h2>Schools</h2>
+        <p>Manage and view all enrolled schools here.</p>
+        <div class="skeleton-box">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+      </div>
+
+      <!-- Devices Tab -->
+      <div id="Devices" class="tab-content">
+        <h2>Devices</h2>
+        <p>Track, migrate, and update device status.</p>
+        <div class="skeleton-box">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+      </div>
+
+      <!-- OUs Tab -->
+      <div id="OUs" class="tab-content">
+        <h2>Organizational Units</h2>
+        <p>Configure targeting and OU hierarchies.</p>
+        <div class="skeleton-box">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preferences View -->
+  <div id="preferences-view" class="view-container">
+    <div class="content-area">
+      <h2>Preferences</h2>
+      <p>Manage global configuration and settings.</p>
+      
+      <div class="pref-group">
+        <label for="theme-select">UI Theme</label>
+        <select id="theme-select" onchange="onThemeChange(event)">
+          <option value="dark">Dark Mode</option>
+          <option value="light">Light Mode</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler((config) => {
+            const theme = config.theme || 'dark';
+            applyTheme(theme);
+            document.getElementById('theme-select').value = theme;
+          })
+          .getClientConfig();
+      }
+    });
+
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    function onThemeChange(e) {
+      const newTheme = e.target.value;
+      applyTheme(newTheme);
+      
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run.saveClientConfig('theme', newTheme);
+      }
+    }
+
+    // Tab functionality
+    function openTab(evt, tabName) {
+      const tabContents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < tabContents.length; i++) {
+        tabContents[i].classList.remove("active");
+      }
+
+      const tabLinks = document.getElementsByClassName("tab-btn");
+      for (let i = 0; i < tabLinks.length; i++) {
+        tabLinks[i].classList.remove("active");
+      }
+
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.classList.add("active");
+    }
+
+    // View toggling functionality (Main <-> Preferences)
+    let isPreferencesView = false;
+    function toggleView() {
+      isPreferencesView = !isPreferencesView;
+      
+      const mainView = document.getElementById("main-view");
+      const prefsView = document.getElementById("preferences-view");
+      const gearIcon = document.getElementById("gear-icon");
+      const backIcon = document.getElementById("back-icon");
+      const navBtn = document.getElementById("nav-btn");
+
+      if (isPreferencesView) {
+        mainView.classList.remove("active");
+        prefsView.classList.add("active");
+        gearIcon.style.display = "none";
+        backIcon.style.display = "block";
+        navBtn.title = "Back to Main";
+      } else {
+        prefsView.classList.remove("active");
+        mainView.classList.add("active");
+        backIcon.style.display = "none";
+        gearIcon.style.display = "block";
+        navBtn.title = "Preferences";
+      }
+    }
+  </script>
+</body>
+</html>

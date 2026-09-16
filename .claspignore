@@ -2,10 +2,13 @@
 **
 
 # Allow Apps Script JS source files
-!dist/*.js
+!*.js
+
+# Allow Apps Script TS source files
+!*.ts
 
 # Allow Apps Script HTML UI files
-!dist/*.html
+!*.html
 
 # Allow Apps Script project manifest
 !appsscript.json
@@ -13,6 +16,7 @@
 # Explicitly ignore Node.js & local development files
 node_modules/**
 package.json
+tsconfig.json
 package-lock.json
 server.js
 .gitignore

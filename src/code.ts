@@ -1,8 +1,4 @@
 import { DeviceProcessorService } from "./processor";
-import { DevicesService } from "./DevicesServiceFile";
-import { DeviceRepository } from "./DeviceReposirotyFile";
-import { DeviceRecord } from "./DeviceRecordFile";
-import { SchoolRecord } from "./SchoolRecordFile";
 
 /**
  * Gets devices for a specific school (EMIS number)

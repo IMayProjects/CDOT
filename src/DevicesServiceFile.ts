@@ -1,11 +1,6 @@
 import { DeviceRepository } from "./DeviceReposirotyFile";
 import { Globals } from "./globals";
-import {
-  DeviceRecordsSheetName,
-  DeviceRecord,
-  DeviceRecordsSheetColumn,
-  DeviceRecordsTitleRow,
-} from "./DeviceRecordFile";
+import { DeviceRecord } from "./DeviceRecordFile";
 import { SchoolRecord } from "./SchoolRecordFile";
 
 export class DevicesService {
@@ -53,6 +48,7 @@ export class DevicesService {
       return {
         emis: emis,
         schoolName: records.length > 0 ? records[0].schoolName : "",
+        district: records.length > 0 ? records[0].district : "",
         values: records,
       };
     });

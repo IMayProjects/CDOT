@@ -1,19 +1,20 @@
+import { DistrictsDef } from "./Config";
 import { DeviceRecord } from "./DeviceRecordFile";
 
 export const BASE_CHROMEBOOK_ORG_UNIT = "/Chromebooks";
 export const ORG_UNIT = {
-  ANE: "Alfred Nzo East",
-  ANW: "Alfred Nzo West",
-  AME: "Amathole East",
-  AMW: "Amathole West",
-  BCM: "Buffalo City",
-  CHE: "Chris Hani East",
-  CHW: "Chris Hani West",
-  JG: "Joe Gqabi",
-  NMB: "Nelson Mandela Bay",
-  ORTC: "OR Tambo Coastal",
-  ORTI: "OR Tambo Inland",
-  SB: "Sarah Baartman",
+  ANE: DistrictsDef.ANE,
+  ANW: DistrictsDef.ANW,
+  AME: DistrictsDef.AME,
+  AMW: DistrictsDef.AMW,
+  BCM: DistrictsDef.BCM,
+  CHE: DistrictsDef.CHE,
+  CHW: DistrictsDef.CHW,
+  JG: DistrictsDef.JG,
+  NMB: DistrictsDef.NMB,
+  ORTC: DistrictsDef.ORTC,
+  ORTI: DistrictsDef.ORTI,
+  SB: DistrictsDef.SB,
 
   ETL_LAB: "Lab Devices",
   Stolen: "Stolen",
@@ -29,7 +30,7 @@ export function parseTargetOrgUnit(record: DeviceRecord): string {
   let district = record.district;
   const emis = record.emisNumber;
 
-  if ([ORG_UNIT.AME, ORG_UNIT.AMW].includes(district)) {
+  if (([ORG_UNIT.AME, ORG_UNIT.AMW] as string[]).includes(district)) {
     district = district.replace("Amathole", "Amatole");
   }
 

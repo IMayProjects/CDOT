@@ -2,321 +2,1056 @@
 <html>
 <head>
   <base target="_top">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #3b82f6;
-      --primary-hover: #60a5fa;
-      --border: #334155;
-      --header-bg: #0b1120;
+      --bg-primary: #09090b;
+      --bg-secondary: #18181b;
+      --bg-tertiary: #27272a;
+      --bg-elevated: #1c1c1f;
+      --surface: rgba(255, 255, 255, 0.03);
+      --surface-hover: rgba(255, 255, 255, 0.06);
+      --surface-active: rgba(255, 255, 255, 0.09);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-tertiary: #71717a;
+      --accent: #3b82f6;
+      --accent-hover: #60a5fa;
+      --accent-muted: rgba(59, 130, 246, 0.12);
+      --accent-subtle: rgba(59, 130, 246, 0.06);
+      --success: #22c55e;
+      --success-muted: rgba(34, 197, 94, 0.12);
+      --warning: #f59e0b;
+      --warning-muted: rgba(245, 158, 11, 0.12);
+      --danger: #ef4444;
+      --danger-muted: rgba(239, 68, 68, 0.12);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Light Theme Overrides */
     [data-theme="light"] {
-      --bg-color: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --border: #e2e8f0;
-      --header-bg: #f1f5f9;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f4f4f5;
+      --bg-tertiary: #e4e4e7;
+      --bg-elevated: #ffffff;
+      --surface: rgba(0, 0, 0, 0.02);
+      --surface-hover: rgba(0, 0, 0, 0.04);
+      --surface-active: rgba(0, 0, 0, 0.06);
+      --border: rgba(0, 0, 0, 0.08);
+      --border-subtle: rgba(0, 0, 0, 0.04);
+      --text-primary: #09090b;
+      --text-secondary: #52525b;
+      --text-tertiary: #a1a1aa;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-muted: rgba(37, 99, 235, 0.08);
+      --accent-subtle: rgba(37, 99, 235, 0.04);
+      --success: #16a34a;
+      --success-muted: rgba(22, 163, 74, 0.08);
+      --warning: #d97706;
+      --warning-muted: rgba(217, 119, 6, 0.08);
+      --danger: #dc2626;
+      --danger-muted: rgba(220, 38, 38, 0.08);
     }
 
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
       overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Top Navigation Bar */
-    .top-nav {
+    /* ─── Top Bar ─── */
+    .topbar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 12px 20px;
-      background-color: var(--header-bg);
+      justify-content: space-between;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+      flex-shrink: 0;
     }
 
-    .nav-title {
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+
+    .topbar-title {
+      font-size: 14px;
       font-weight: 600;
-      font-size: 1.1rem;
-      margin: 0;
+      letter-spacing: -0.01em;
     }
+
+    .topbar-badge {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-muted);
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar-actions { display: flex; align-items: center; gap: 4px; }
 
     .icon-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 6px;
-      border-radius: 4px;
-      transition: background-color 0.2s, color 0.2s;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--text-tertiary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
     }
 
     .icon-btn:hover {
-      background-color: var(--border);
-      color: var(--text-main);
+      background: var(--surface-hover);
+      color: var(--text-primary);
     }
 
-    /* Views */
-    .view-container {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      overflow: hidden;
-      animation: fadeIn 0.3s ease;
-    }
+    .icon-btn svg { width: 16px; height: 16px; }
 
-    .view-container.active {
+    /* ─── Tab Bar ─── */
+    .tab-bar {
       display: flex;
-    }
-
-    /* Tabs Header */
-    .tabs-header {
-      display: flex;
-      background-color: var(--card-bg);
       border-bottom: 1px solid var(--border);
-      padding: 0 10px;
+      background: var(--bg-primary);
+      padding: 0 16px;
+      flex-shrink: 0;
     }
 
-    .tab-btn {
-      flex: 1;
+    .tab-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-tertiary);
       background: none;
       border: none;
-      color: var(--text-muted);
-      padding: 16px 12px;
-      font-size: 14px;
-      font-weight: 500;
       cursor: pointer;
-      position: relative;
-      transition: color 0.3s ease;
-      outline: none;
+      transition: color var(--transition);
+      white-space: nowrap;
     }
 
-    .tab-btn:hover {
-      color: var(--text-main);
-    }
+    .tab-item:hover { color: var(--text-secondary); }
 
-    .tab-btn.active {
-      color: var(--primary);
-    }
+    .tab-item.active { color: var(--text-primary); }
 
-    .tab-btn.active::after {
+    .tab-item.active::after {
       content: '';
       position: absolute;
       bottom: -1px;
-      left: 0;
-      right: 0;
+      left: 12px;
+      right: 12px;
       height: 2px;
-      background-color: var(--primary);
+      background: var(--text-primary);
       border-radius: 2px 2px 0 0;
     }
 
-    /* Content Area */
-    .content-area {
+    .tab-count {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      background: var(--surface);
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tab-item.active .tab-count {
+      color: var(--text-secondary);
+      background: var(--surface-hover);
+    }
+
+    /* ─── Views ─── */
+    .view { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .view.active { display: flex; }
+
+    /* ─── Content Scroll ─── */
+    .scroll-area {
       flex: 1;
-      padding: 20px;
       overflow-y: auto;
+      padding: 16px;
     }
 
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease;
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ─── Section Headers ─── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
     }
 
-    .tab-content.active {
-      display: block;
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
     }
 
-    /* Skeleton placeholders */
-    .skeleton-box {
-      background-color: var(--card-bg);
+    /* ─── Filter Toolbar ─── */
+    .filter-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .filter-toolbar select,
+    .filter-toolbar input {
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color var(--transition);
     }
 
-    .skeleton-title {
-      height: 20px;
-      width: 40%;
-      background: linear-gradient(90deg, var(--border) 25%, #475569 50%, var(--border) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 2s infinite;
+    .filter-toolbar select:focus,
+    .filter-toolbar input:focus { border-color: var(--accent); }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .pill-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-muted);
+    }
+
+    .pill-btn.has-filters {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-muted);
+    }
+
+    .pill-btn svg { width: 14px; height: 14px; }
+
+    .filter-info {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Cards ─── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      transition: all var(--transition);
+    }
+
+    .card:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    [data-theme="light"] .card:hover {
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    .card + .card { margin-top: 8px; }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      background: var(--bg-secondary);
+      padding: 3px 8px;
       border-radius: 4px;
-      margin-bottom: 15px;
     }
 
-    .skeleton-line {
-      height: 12px;
-      background: linear-gradient(90deg, var(--border) 25%, #475569 50%, var(--border) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 2s infinite;
+    .meta-tag svg { width: 12px; height: 12px; opacity: 0.6; }
+
+    /* ─── School Card Action ─── */
+    .card-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .card-action-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-muted);
+    }
+
+    .card-action-btn svg { width: 12px; height: 12px; }
+
+    /* ─── Device Card Extended ─── */
+    .device-ou-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .ou-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      min-width: 50px;
+    }
+
+    .ou-path {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--bg-secondary);
+      padding: 3px 8px;
       border-radius: 4px;
-      margin-bottom: 10px;
-    }
-    
-    .skeleton-line.short {
-      width: 70%;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
     }
 
-    h2 {
-      margin-top: 0;
-      font-size: 1.25rem;
+    .migrate-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .migrate-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-muted);
+    }
+
+    .migrate-btn.migrating {
+      pointer-events: none;
+      opacity: 0.6;
+      color: var(--warning);
+      border-color: var(--warning);
+      background: var(--warning-muted);
+    }
+
+    .migrate-btn.success {
+      pointer-events: none;
+      color: var(--success);
+      border-color: var(--success);
+      background: var(--success-muted);
+    }
+
+    .migrate-btn.error {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: var(--danger-muted);
+    }
+
+    .migrate-btn svg { width: 12px; height: 12px; }
+
+    .ou-match-badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .ou-match-badge.synced {
+      color: var(--success);
+      background: var(--success-muted);
+    }
+
+    .ou-match-badge.pending {
+      color: var(--warning);
+      background: var(--warning-muted);
+    }
+
+    /* ─── Groups (details/summary) ─── */
+    .group-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .group-card + .group-card { margin-top: 8px; }
+
+    .group-card summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--surface);
+      transition: background var(--transition);
+      list-style: none;
+    }
+
+    .group-card summary::-webkit-details-marker { display: none; }
+
+    .group-card summary::before {
+      content: '';
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-left: 5px solid var(--text-tertiary);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      transition: transform var(--transition);
+      flex-shrink: 0;
+    }
+
+    .group-card[open] summary::before { transform: rotate(90deg); }
+    .group-card summary:hover { background: var(--surface-hover); }
+
+    .group-card summary .tab-count {
+      margin-left: auto;
+    }
+
+    .group-children { padding: 4px 10px 10px; }
+    .group-children .card { border: 1px solid var(--border-subtle); }
+
+    /* ─── Modal ─── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: overlayIn 200ms ease;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-panel {
+      width: min(100%, 420px);
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+      animation: panelIn 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-size: 14px;
       font-weight: 600;
     }
 
-    p {
-      color: var(--text-muted);
-      font-size: 0.875rem;
-      line-height: 1.5;
+    .modal-body { padding: 16px 20px; }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
     }
-    
-    /* Preferences specific */
-    .pref-group {
-      margin-top: 15px;
+
+    .btn {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    /* ─── Filter Modal Fields ─── */
+    .filter-section { padding-top: 14px; }
+    .filter-section + .filter-section {
+      margin-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .filter-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .filter-section-header label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .filter-section textarea,
+    .filter-section select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-primary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color var(--transition);
+      resize: vertical;
+    }
+
+    .filter-section textarea { min-height: 60px; }
+    .filter-section textarea:focus,
+    .filter-section select:focus { border-color: var(--accent); }
+
+    .filter-help {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 4px;
+    }
+
+    .district-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+
+    .checkbox-item:hover { background: var(--surface-hover); }
+
+    .checkbox-item label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* Toggle switch */
+    .toggle-track {
+      position: relative;
+      width: 32px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .toggle-track input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+
+    .toggle-slider::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      width: 14px;
+      height: 14px;
+      background: var(--text-tertiary);
+      border-radius: 50%;
+      transition: transform var(--transition), background var(--transition);
+    }
+
+    .toggle-track input:checked + .toggle-slider { background: var(--accent-muted); }
+    .toggle-track input:checked + .toggle-slider::after {
+      transform: translateX(14px);
+      background: var(--accent);
+    }
+
+    /* ─── Preferences ─── */
+    .pref-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .pref-item:last-child { border-bottom: none; }
+
+    .pref-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .pref-desc {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .pref-item select {
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      outline: none;
+    }
+
+    /* ─── Empty State ─── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .empty-state svg {
+      width: 40px;
+      height: 40px;
+      color: var(--text-tertiary);
+      opacity: 0.4;
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    /* ─── Loading Skeleton ─── */
+    .skeleton {
+      border-radius: var(--radius-sm);
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface-hover) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.8s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 8px;
+    }
+
+    .skeleton-line { height: 12px; margin-bottom: 8px; border-radius: 4px; }
+    .skeleton-line.w60 { width: 60%; }
+    .skeleton-line.w40 { width: 40%; }
+    .skeleton-line.w80 { width: 80%; }
+
+    /* ─── Toast ─── */
+    .toast-container {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 200;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    
-    .pref-group label {
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-    
-    .pref-group select {
-      padding: 8px 12px;
-      border-radius: 4px;
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--bg-elevated);
       border: 1px solid var(--border);
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: inherit;
-      outline: none;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      font-size: 12px;
+      color: var(--text-secondary);
+      animation: toastIn 250ms ease;
     }
+
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--danger); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Animations ─── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeIn 200ms ease; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spin { animation: spin 800ms linear infinite; }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation Bar -->
-  <div class="top-nav">
-    <h1 class="nav-title">CDOT Tools</h1>
-    <button class="icon-btn" id="nav-btn" onclick="toggleView()" title="Preferences">
-      <!-- Gear Icon -->
-      <svg id="gear-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-      </svg>
-      <!-- Back Arrow Icon (Hidden initially) -->
-      <svg id="back-icon" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
-    </button>
-  </div>
-
-  <!-- Main View -->
-  <div id="main-view" class="view-container active">
-    <!-- Tabs Navigation -->
-    <div class="tabs-header">
-      <button class="tab-btn active" onclick="openTab(event, 'Schools')">Schools</button>
-      <button class="tab-btn" onclick="openTab(event, 'Devices')">Devices</button>
-      <button class="tab-btn" onclick="openTab(event, 'OUs')">OUs</button>
+  <!-- ═══ Top Bar ═══ -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">CDOT</span>
+      <span class="topbar-badge">Control Panel</span>
     </div>
-
-    <!-- Tabs Content -->
-    <div class="content-area">
-      <!-- Schools Tab -->
-      <div id="Schools" class="tab-content active">
-        <h2>Schools</h2>
-        <p>Manage and view all enrolled schools here.</p>
-        <div class="skeleton-box">
-          <div class="skeleton-title"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-        </div>
-      </div>
-
-      <!-- Devices Tab -->
-      <div id="Devices" class="tab-content">
-        <h2>Devices</h2>
-        <p>Track, migrate, and update device status.</p>
-        <div class="skeleton-box">
-          <div class="skeleton-title"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-        </div>
-      </div>
-
-      <!-- OUs Tab -->
-      <div id="OUs" class="tab-content">
-        <h2>Organizational Units</h2>
-        <p>Configure targeting and OU hierarchies.</p>
-        <div class="skeleton-box">
-          <div class="skeleton-title"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-        </div>
-      </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="settings-btn" onclick="toggleView()" title="Settings">
+        <svg id="gear-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <svg id="back-icon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
     </div>
   </div>
 
-  <!-- Preferences View -->
-  <div id="preferences-view" class="view-container">
-    <div class="content-area">
-      <h2>Preferences</h2>
-      <p>Manage global configuration and settings.</p>
-      
-      <div class="pref-group">
-        <label for="theme-select">UI Theme</label>
+  <!-- ═══ Main View ═══ -->
+  <div id="main-view" class="view active">
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-item active" data-tab="Schools" onclick="openTab(event, 'Schools')">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        Schools
+        <span class="tab-count" id="school-count">–</span>
+      </button>
+      <button class="tab-item" data-tab="Devices" onclick="openTab(event, 'Devices')">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        Devices
+        <span class="tab-count" id="device-count">–</span>
+      </button>
+    </div>
+
+    <!-- Schools Tab Content -->
+    <div id="Schools" class="view active">
+      <div class="scroll-area" id="schools-scroll">
+        <div class="section-header">
+          <div>
+            <div class="section-title">All Schools</div>
+            <div class="section-subtitle">Schools represented in device records</div>
+          </div>
+        </div>
+        <div id="schools-list">
+          <div class="skeleton-card"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w40"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Devices Tab Content -->
+    <div id="Devices" class="view">
+      <div class="filter-toolbar">
+        <button class="pill-btn" id="filter-btn" onclick="openFilterModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          Filters
+        </button>
+        <select id="group-by" onchange="reloadDevices()">
+          <option value="none">No grouping</option>
+          <option value="school">Group by school</option>
+          <option value="district">Group by district</option>
+          <option value="districtSchool">District → School</option>
+        </select>
+        <span class="filter-info" id="device-result-summary">Loading…</span>
+      </div>
+      <div class="scroll-area">
+        <div id="devices-list">
+          <div class="skeleton-card"><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w40"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Preferences View ═══ -->
+  <div id="preferences-view" class="view">
+    <div class="scroll-area">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Settings</div>
+          <div class="section-subtitle">Configure display and behavior</div>
+        </div>
+      </div>
+      <div class="pref-item">
+        <div>
+          <div class="pref-label">Theme</div>
+          <div class="pref-desc">Switch between dark and light mode</div>
+        </div>
         <select id="theme-select" onchange="onThemeChange(event)">
-          <option value="dark">Dark Mode</option>
-          <option value="light">Light Mode</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
         </select>
       </div>
-
+      <div class="pref-item">
+        <div>
+          <div class="pref-label">Filter Logic</div>
+          <div class="pref-desc">How enabled filters combine</div>
+        </div>
+        <select id="query-join-mode" onchange="onQueryJoinModeChange(event)">
+          <option value="AND">Match all (AND)</option>
+          <option value="OR">Match any (OR)</option>
+        </select>
+      </div>
     </div>
   </div>
 
+  <!-- ═══ Filter Modal ═══ -->
+  <div class="modal-overlay" id="filter-modal" onclick="if(event.target === this) closeFilterModal()">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3>Device Filters</h3>
+        <button class="icon-btn" onclick="closeFilterModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <label for="filter-serial-numbers">Serial Numbers</label>
+            <label class="toggle-track"><input type="checkbox" id="enable-serial-numbers"><span class="toggle-slider"></span></label>
+          </div>
+          <textarea id="filter-serial-numbers" placeholder="One serial number per line or comma-separated"></textarea>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <label for="filter-emis-numbers">EMIS Numbers</label>
+            <label class="toggle-track"><input type="checkbox" id="enable-emis-numbers"><span class="toggle-slider"></span></label>
+          </div>
+          <textarea id="filter-emis-numbers" placeholder="One EMIS number per line or comma-separated"></textarea>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <label>Districts</label>
+            <label class="toggle-track"><input type="checkbox" id="enable-districts"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="district-grid" id="filter-districts-list"></div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-section-header">
+            <label for="filter-sample-flags">Sample Status</label>
+            <label class="toggle-track"><input type="checkbox" id="enable-sample-flags"><span class="toggle-slider"></span></label>
+          </div>
+          <select id="filter-sample-flags">
+            <option value="true">Sample devices</option>
+            <option value="false">Non-sample devices</option>
+          </select>
+        </div>
+
+        <div class="filter-section">
+          <label style="font-size:12px;font-weight:600;color:var(--text-secondary);">Combine enabled fields</label>
+          <select id="filter-join-mode" style="margin-top:6px;">
+            <option value="AND">Match all enabled fields</option>
+            <option value="OR">Match any enabled field</option>
+          </select>
+          <div class="filter-help">AND is applied between fields where it is meaningful.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="clearFilters()">Clear</button>
+        <button class="btn" onclick="closeFilterModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Toast Container ═══ -->
+  <div class="toast-container" id="toast-container"></div>
+
   <script>
+    /* ═══════════════════════════════════════════
+     * Initialization
+     * ═══════════════════════════════════════════ */
     document.addEventListener("DOMContentLoaded", () => {
+      loadSchools();
+      reloadDevices();
+
       if (typeof google !== 'undefined' && google.script) {
         google.script.run
           .withSuccessHandler((config) => {
             const theme = config.theme || 'dark';
+            const queryJoinMode = config.queryJoinMode || 'AND';
             applyTheme(theme);
             document.getElementById('theme-select').value = theme;
+            document.getElementById('query-join-mode').value = queryJoinMode;
+            document.getElementById('filter-join-mode').value = queryJoinMode;
           })
           .getClientConfig();
+
+        google.script.run
+          .withSuccessHandler((districts) => {
+            const list = document.getElementById('filter-districts-list');
+            Object.values(districts).forEach((d) => {
+              const div = document.createElement('div');
+              div.className = 'checkbox-item';
+
+              const cb = document.createElement('input');
+              cb.type = 'checkbox';
+              cb.value = d;
+              cb.id = `district-${d.replace(/[\s&]+/g, '-')}`;
+
+              const label = document.createElement('label');
+              label.htmlFor = cb.id;
+              label.textContent = d;
+
+              div.appendChild(cb);
+              div.appendChild(label);
+              list.appendChild(div);
+            });
+          })
+          .getDistrictsDef();
       }
     });
 
+    /* ═══════════════════════════════════════════
+     * Theme
+     * ═══════════════════════════════════════════ */
     function applyTheme(theme) {
       if (theme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
@@ -328,52 +1063,376 @@
     function onThemeChange(e) {
       const newTheme = e.target.value;
       applyTheme(newTheme);
-      
       if (typeof google !== 'undefined' && google.script) {
         google.script.run.saveClientConfig('theme', newTheme);
       }
     }
 
-    // Tab functionality
-    function openTab(evt, tabName) {
-      const tabContents = document.getElementsByClassName("tab-content");
-      for (let i = 0; i < tabContents.length; i++) {
-        tabContents[i].classList.remove("active");
+    function onQueryJoinModeChange(e) {
+      const joinMode = e.target.value;
+      document.getElementById('filter-join-mode').value = joinMode;
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run.saveClientConfig('queryJoinMode', joinMode);
       }
-
-      const tabLinks = document.getElementsByClassName("tab-btn");
-      for (let i = 0; i < tabLinks.length; i++) {
-        tabLinks[i].classList.remove("active");
-      }
-
-      document.getElementById(tabName).classList.add("active");
-      evt.currentTarget.classList.add("active");
     }
 
-    // View toggling functionality (Main <-> Preferences)
+    /* ═══════════════════════════════════════════
+     * Tab Navigation
+     * ═══════════════════════════════════════════ */
+    function openTab(evt, tabName) {
+      // Hide all tab panels
+      document.querySelectorAll('#main-view > .view').forEach(v => v.classList.remove('active'));
+      // Deactivate all tab buttons
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      // Activate selected
+      document.getElementById(tabName).classList.add('active');
+      if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add('active');
+      } else {
+        document.querySelector(`.tab-item[data-tab="${tabName}"]`).classList.add('active');
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+     * View Toggle (Main ↔ Preferences)
+     * ═══════════════════════════════════════════ */
     let isPreferencesView = false;
     function toggleView() {
       isPreferencesView = !isPreferencesView;
-      
       const mainView = document.getElementById("main-view");
       const prefsView = document.getElementById("preferences-view");
       const gearIcon = document.getElementById("gear-icon");
       const backIcon = document.getElementById("back-icon");
-      const navBtn = document.getElementById("nav-btn");
 
       if (isPreferencesView) {
         mainView.classList.remove("active");
         prefsView.classList.add("active");
         gearIcon.style.display = "none";
         backIcon.style.display = "block";
-        navBtn.title = "Back to Main";
       } else {
         prefsView.classList.remove("active");
         mainView.classList.add("active");
         backIcon.style.display = "none";
         gearIcon.style.display = "block";
-        navBtn.title = "Preferences";
       }
+    }
+
+    /* ═══════════════════════════════════════════
+     * Filter Modal
+     * ═══════════════════════════════════════════ */
+    function openFilterModal() {
+      document.getElementById('filter-join-mode').value = document.getElementById('query-join-mode').value;
+      document.getElementById('filter-modal').classList.add('open');
+    }
+
+    function closeFilterModal() {
+      document.getElementById('filter-modal').classList.remove('open');
+    }
+
+    function updateFilterBtnState() {
+      const btn = document.getElementById('filter-btn');
+      const hasFilters = ['serial-numbers', 'emis-numbers', 'districts', 'sample-flags']
+        .some(f => document.getElementById(`enable-${f}`).checked);
+      btn.classList.toggle('has-filters', hasFilters);
+    }
+
+    function clearFilters() {
+      ['serial-numbers', 'emis-numbers', 'districts', 'sample-flags'].forEach((field) => {
+        document.getElementById(`enable-${field}`).checked = false;
+      });
+      ['filter-serial-numbers', 'filter-emis-numbers'].forEach((id) => {
+        document.getElementById(id).value = '';
+      });
+      document.querySelectorAll('#filter-districts-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.getElementById('filter-sample-flags').value = 'true';
+      document.getElementById('filter-join-mode').value = document.getElementById('query-join-mode').value;
+      updateFilterBtnState();
+    }
+
+    /* ═══════════════════════════════════════════
+     * Query Builder
+     * ═══════════════════════════════════════════ */
+    function valuesFromText(id) {
+      return Array.from(new Set(
+        document.getElementById(id).value
+          .split(/[\n,]/)
+          .map((value) => value.trim())
+          .filter(Boolean),
+      ));
+    }
+
+    function valuesFromCheckboxes(containerId) {
+      const container = document.getElementById(containerId);
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function getDeviceQuery() {
+      return {
+        joinMode: document.getElementById('filter-join-mode').value,
+        groupBy: document.getElementById('group-by').value,
+        serialNumbers: {
+          enabled: document.getElementById('enable-serial-numbers').checked,
+          values: valuesFromText('filter-serial-numbers'),
+        },
+        emisNumbers: {
+          enabled: document.getElementById('enable-emis-numbers').checked,
+          values: valuesFromText('filter-emis-numbers'),
+        },
+        districts: {
+          enabled: document.getElementById('enable-districts').checked,
+          values: valuesFromCheckboxes('filter-districts-list'),
+        },
+        sampleFlags: {
+          enabled: document.getElementById('enable-sample-flags').checked,
+          values: [document.getElementById('filter-sample-flags').value === 'true'],
+        },
+      };
+    }
+
+    /* ═══════════════════════════════════════════
+     * HTML Helpers
+     * ═══════════════════════════════════════════ */
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 3000);
+    }
+
+    /* ═══════════════════════════════════════════
+     * School → Devices Navigation
+     * ═══════════════════════════════════════════ */
+    function viewSchoolDevices(emis) {
+      // Set EMIS filter and switch to Devices tab
+      document.getElementById('filter-emis-numbers').value = emis;
+      document.getElementById('enable-emis-numbers').checked = true;
+      // Open the Devices tab
+      openTab(null, 'Devices');
+      // Apply filters
+      applyFilters();
+      updateFilterBtnState();
+    }
+
+    /* ═══════════════════════════════════════════
+     * Render: Schools
+     * ═══════════════════════════════════════════ */
+    function renderSchools(schools) {
+      const list = document.getElementById('schools-list');
+      document.getElementById('school-count').textContent = schools.length;
+
+      if (!schools.length) {
+        list.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          <p>No schools found</p>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = schools.map((school) => `
+        <div class="card fade-in">
+          <div class="card-header">
+            <div>
+              <div class="card-title">${escapeHtml(school.schoolName || 'Unnamed school')}</div>
+              <div class="card-meta">
+                <span class="meta-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+                  EMIS ${escapeHtml(school.emis)}
+                </span>
+                <span class="meta-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  ${escapeHtml(school.district || 'No district')}
+                </span>
+                <span class="meta-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  ${school.values.length} device${school.values.length === 1 ? '' : 's'}
+                </span>
+              </div>
+            </div>
+            <button class="card-action-btn" onclick="viewSchoolDevices('${escapeHtml(school.emis)}')" title="View devices for this school">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              View
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ═══════════════════════════════════════════
+     * Render: Device Records
+     * ═══════════════════════════════════════════ */
+    function renderDeviceRecords(records) {
+      if (!records.length) return '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg><p>No devices found</p></div>';
+      return records.map((r) => {
+        const isSynced = r.currentOrgUnitPath === r.targetOrgUnitPath;
+        const needsMigration = r.targetOrgUnitPath && !isSynced;
+        return `
+        <div class="card fade-in">
+          <div class="card-header">
+            <div>
+              <div class="card-title">${escapeHtml(r.serialNumber || 'Unknown serial')}</div>
+              <div class="card-meta">
+                <span class="meta-tag">${escapeHtml(r.schoolName || 'Unknown school')}</span>
+                <span class="meta-tag">${escapeHtml(r.district || 'No district')}</span>
+                ${r.isSample ? '<span class="meta-tag" style="color:var(--accent)">Sample</span>' : ''}
+                ${isSynced
+                  ? '<span class="ou-match-badge synced">Synced</span>'
+                  : (r.targetOrgUnitPath ? '<span class="ou-match-badge pending">Pending</span>' : '')}
+              </div>
+            </div>
+          </div>
+          <div class="device-ou-row">
+            <span class="ou-label">Current</span>
+            <span class="ou-path" title="${escapeHtml(r.currentOrgUnitPath)}">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
+          </div>
+          ${r.targetOrgUnitPath ? `
+          <div class="device-ou-row" style="border-top:none;padding-top:4px;margin-top:4px;">
+            <span class="ou-label">Target</span>
+            <span class="ou-path" title="${escapeHtml(r.targetOrgUnitPath)}">${escapeHtml(r.targetOrgUnitPath)}</span>
+            ${needsMigration ? `
+            <button class="migrate-btn" id="migrate-${escapeHtml(r.deviceId)}" onclick="migrateDevice('${escapeHtml(r.deviceId)}', '${escapeHtml(r.targetOrgUnitPath)}', '${escapeHtml(r.serialNumber)}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+              Migrate
+            </button>` : ''}
+          </div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    function renderDeviceGroup(group) {
+      const content = group.children
+        ? `<div class="group-children">${group.children.map(renderDeviceGroup).join('')}</div>`
+        : `<div class="group-children">${renderDeviceRecords(group.records)}</div>`;
+      return `
+        <details class="group-card">
+          <summary>
+            ${escapeHtml(group.label)}
+            ${group.subtitle ? `<span style="font-weight:400;color:var(--text-tertiary);font-size:11px;">${escapeHtml(group.subtitle)}</span>` : ''}
+            <span class="tab-count">${group.records.length}</span>
+          </summary>
+          ${content}
+        </details>
+      `;
+    }
+
+    function renderDevices(result, groupBy) {
+      const list = document.getElementById('devices-list');
+      document.getElementById('device-count').textContent = result.records.length;
+      list.innerHTML = groupBy === 'none'
+        ? renderDeviceRecords(result.records)
+        : result.groups.map(renderDeviceGroup).join('') || '<div class="empty-state"><p>No devices found</p></div>';
+    }
+
+    /* ═══════════════════════════════════════════
+     * Data Loading
+     * ═══════════════════════════════════════════ */
+    function loadSchools() {
+      const list = document.getElementById('schools-list');
+      if (typeof google === 'undefined' || !google.script) {
+        list.innerHTML = '<div class="empty-state"><p>School data is available when opened from Apps Script.</p></div>';
+        document.getElementById('school-count').textContent = '0';
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(renderSchools)
+        .withFailureHandler((error) => {
+          list.innerHTML = `<div class="empty-state"><p>Unable to load schools: ${escapeHtml(error.message || error)}</p></div>`;
+        })
+        .listSchools();
+    }
+
+    function reloadDevices() {
+      const query = getDeviceQuery();
+      const summary = document.getElementById('device-result-summary');
+      if (typeof google === 'undefined' || !google.script) {
+        summary.textContent = 'Available from Apps Script';
+        document.getElementById('device-count').textContent = '0';
+        return;
+      }
+      summary.textContent = 'Loading…';
+      google.script.run
+        .withSuccessHandler((result) => {
+          renderDevices(result, query.groupBy);
+          summary.textContent = `${result.records.length} device${result.records.length === 1 ? '' : 's'}`;
+        })
+        .withFailureHandler((error) => {
+          summary.textContent = `Error: ${error.message || error}`;
+        })
+        .searchDevices(query);
+    }
+
+    function applyFilters() {
+      const query = getDeviceQuery();
+      const summary = document.getElementById('device-result-summary');
+      document.getElementById('query-join-mode').value = query.joinMode;
+      summary.textContent = 'Searching…';
+
+      if (typeof google === 'undefined' || !google.script) {
+        summary.textContent = 'Available from Apps Script';
+        closeFilterModal();
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler((result) => {
+          renderDevices(result, query.groupBy);
+          const enabledFields = Object.values(query)
+            .filter((field) => field && typeof field === 'object' && 'enabled' in field)
+            .filter((field) => field.enabled).length;
+          summary.textContent = `${result.records.length} device${result.records.length === 1 ? '' : 's'}${enabledFields ? ` · ${enabledFields} filter${enabledFields === 1 ? '' : 's'}` : ''}`;
+          closeFilterModal();
+          updateFilterBtnState();
+        })
+        .withFailureHandler((error) => {
+          summary.textContent = `Error: ${error.message || error}`;
+        })
+        .searchDevices(query);
+
+      google.script.run.saveClientConfig('queryJoinMode', query.joinMode);
+    }
+
+    /* ═══════════════════════════════════════════
+     * Individual Device Migration
+     * ═══════════════════════════════════════════ */
+    function migrateDevice(deviceId, targetOuPath, serialNumber) {
+      if (typeof google === 'undefined' || !google.script) {
+        showToast('Migration requires Apps Script', 'error');
+        return;
+      }
+
+      const btn = document.getElementById(`migrate-${deviceId}`);
+      if (!btn || btn.classList.contains('migrating')) return;
+
+      btn.classList.add('migrating');
+      btn.innerHTML = `<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> Migrating…`;
+
+      google.script.run
+        .withSuccessHandler(() => {
+          btn.classList.remove('migrating');
+          btn.classList.add('success');
+          btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Done`;
+          showToast(`Migrated ${serialNumber}`, 'success');
+          // Refresh devices after a short delay
+          setTimeout(reloadDevices, 1500);
+        })
+        .withFailureHandler((error) => {
+          btn.classList.remove('migrating');
+          btn.classList.add('error');
+          btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Failed`;
+          showToast(`Failed: ${error.message || error}`, 'error');
+        })
+        .migrateDeviceToTarget(deviceId, targetOuPath);
     }
   </script>
 </body>

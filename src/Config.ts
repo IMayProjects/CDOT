@@ -1,11 +1,32 @@
 export const ConfigSheetName = "config";
 
+export enum DistrictsDef {
+  ANE = "Alfred Nzo East",
+  ANW = "Alfred Nzo West",
+  AME = "Amathole East",
+  AMW = "Amathole West",
+  BCM = "Buffalo City",
+  CHE = "Chris Hani East",
+  CHW = "Chris Hani West",
+  JG = "Joe Gqabi",
+  NMB = "Nelson Mandela Bay",
+  ORTC = "OR Tambo Coastal",
+  ORTI = "OR Tambo Inland",
+  SB = "Sarah Baartman",
+}
+
+export function getDistrictsDef() {
+  return DistrictsDef;
+}
+
 export enum ConfigKeys {
   THEME = "theme",
+  QUERY_JOIN_MODE = "queryJoinMode",
 }
 
 const DEFAULT_CONFIG: Record<string, string> = {
   [ConfigKeys.THEME]: "dark",
+  [ConfigKeys.QUERY_JOIN_MODE]: "AND",
 };
 
 export class PreferencesService {

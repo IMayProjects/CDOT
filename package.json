@@ -5,7 +5,8 @@
   "main": "Code.js",
   "scripts": {
     "build": "node scripts/build.js",
-    "push": "npm run build && npx.cmd clasp push"
+    "push": "npm run build && npx.cmd clasp push",
+    "serve": "node scripts/serve.js"
   },
   "devDependencies": {
     "@types/google-apps-script": "^1.0.100",

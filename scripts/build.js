@@ -16,7 +16,15 @@ const bundles = [
     entry: "src/UI.ts",
     output: "ui.js",
     globalName: "CDOTUI",
-    handlers: ["onOpen", "showSidebar", "getClientConfig", "saveClientConfig"],
+    handlers: [
+      "onOpen",
+      "showSidebar",
+      "getClientConfig",
+      "saveClientConfig",
+      "getDistrictsDef",
+      "searchDevices",
+      "listSchools",
+    ],
   },
 ];
 

@@ -894,6 +894,17 @@
             <div class="section-subtitle">Schools represented in device records</div>
           </div>
         </div>
+        <div class="filter-toolbar school-filter-toolbar">
+          <select id="school-pilot-filter" onchange="applySchoolFilters()">
+            <option value="all">All pilot statuses</option>
+            <option value="pilot">Pilot schools</option>
+            <option value="non-pilot">Non-pilot schools</option>
+          </select>
+          <select id="school-district-filter" onchange="applySchoolFilters()">
+            <option value="all">All districts</option>
+          </select>
+          <input id="school-emis-filter" type="search" placeholder="Filter EMIS number" oninput="applySchoolFilters()">
+        </div>
         <div id="schools-list">
           <div class="skeleton-card"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div></div>
           <div class="skeleton-card"><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w40"></div></div>
@@ -1024,6 +1035,7 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script>
+    let allSchools = [];
     /* ═══════════════════════════════════════════
      * Initialization
      * ═══════════════════════════════════════════ */
@@ -1248,6 +1260,39 @@
      * Render: Schools
      * ═══════════════════════════════════════════ */
     function renderSchools(schools) {
+      allSchools = schools;
+      populateSchoolDistricts(schools);
+      renderFilteredSchools();
+    }
+
+    function populateSchoolDistricts(schools) {
+      const select = document.getElementById('school-district-filter');
+      const selected = select.value;
+      const districts = [...new Set(schools.map(s => s.district).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b));
+      select.innerHTML = '<option value="all">All districts</option>' +
+        districts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+      select.value = districts.includes(selected) ? selected : 'all';
+    }
+
+    function applySchoolFilters() {
+      renderFilteredSchools();
+    }
+
+    function renderFilteredSchools() {
+      const pilotFilter = document.getElementById('school-pilot-filter')?.value || 'all';
+      const districtFilter = document.getElementById('school-district-filter')?.value || 'all';
+      const emisFilter = (document.getElementById('school-emis-filter')?.value || '').trim().toLowerCase();
+      const filtered = allSchools.filter((school) => {
+        const isPilot = school.values.some(v => v.isSample);
+        return (pilotFilter === 'all' || (pilotFilter === 'pilot' ? isPilot : !isPilot)) &&
+          (districtFilter === 'all' || school.district === districtFilter) &&
+          (!emisFilter || String(school.emis).toLowerCase().includes(emisFilter));
+      });
+      renderSchoolList(filtered);
+    }
+
+    function renderSchoolList(schools) {
       const list = document.getElementById('schools-list');
       document.getElementById('school-count').textContent = schools.length;
 

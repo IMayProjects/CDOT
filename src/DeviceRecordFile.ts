@@ -23,7 +23,7 @@ export interface DeviceRecord {
   isSample: boolean;
 }
 
-export const AcDevicesSheetName = "ac_devices";
+export const AcDevicesSheetName = "admin_console_device_cache";
 export const AcDevicesColumn = {
   SERIAL_NUMBER: 0,
   DEVICE_ID: 1,

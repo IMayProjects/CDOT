@@ -1,7 +1,7 @@
 import { DeviceRepository } from "./DeviceReposirotyFile";
 import { Globals } from "./globals";
 import { DeviceRecord } from "./DeviceRecordFile";
-import { SchoolRecord } from "./SchoolRecordFile";
+import { SchoolDevicesRecord } from "./SchoolRecordFile";
 import { parseTargetOrgUnit } from "./organizational_units";
 
 /**
@@ -81,8 +81,11 @@ export class DevicesService {
 
   setSchoolPilotStatus(emisNumber: string, status: boolean): number {
     const records = this.getRecordsByEmisNumber([emisNumber]);
-    const serials = records.map((record) => record.serialNumber).filter(Boolean);
+    const serials = records
+      .map((record) => record.serialNumber)
+      .filter(Boolean);
     this.repo.setPilotStatus(serials, status);
+    this.repo.setSchoolPilotFlag(emisNumber, status);
     return serials.length;
   }
 
@@ -96,11 +99,11 @@ export class DevicesService {
   /**
    * Retrieves school records grouped by EMIS numbers.
    * @param {string[]} emisNumbers - An array of EMIS numbers to fetch records for.
-   * @returns {SchoolRecord[]} An array of school records, grouped by EMIS number.
+   * @returns {SchoolDevicesRecord[]} An array of school records, grouped by EMIS number.
    */
-  getSchoolRecords(emisNumbers: string[]): SchoolRecord[] {
-    const trimmedEmis = Array.from(new Set(emisNumbers.map((e) => e.trim())));
-    const allMatchingRecords = this.getRecordsByEmisNumber(trimmedEmis);
+  getSchoolRecords(): SchoolDevicesRecord[] {
+    const schoolRecords = this.repo.getAllSchoolRecords();
+    const allMatchingRecords = this.getAllRecords();
 
     const recordsByEmis: Record<string, DeviceRecord[]> = {};
     for (const record of allMatchingRecords) {
@@ -110,13 +113,12 @@ export class DevicesService {
       recordsByEmis[record.emisNumber].push(record);
     }
 
-    return trimmedEmis.map((emis) => {
+    return schoolRecords.map((school) => {
+      const emis = school.emis;
       const records = recordsByEmis[emis] || [];
       return {
-        emis: emis,
-        schoolName: records.length > 0 ? records[0].schoolName : "",
-        district: records.length > 0 ? records[0].district : "",
-        values: records,
+        school,
+        devices: records,
       };
     });
   }

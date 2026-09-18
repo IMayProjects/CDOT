@@ -60,14 +60,11 @@ export function toggleSchoolPilotStatus(emisNumber: string, status: boolean) {
 }
 
 export function listSchools() {
-  const records = DevicesService.getInstance().getAllRecords();
-  const emisNumbers = Array.from(
-    new Set(records.map((record) => record.emisNumber).filter(Boolean)),
-  );
-
   return DevicesService.getInstance()
-    .getSchoolRecords(emisNumbers)
-    .sort((left, right) => left.schoolName.localeCompare(right.schoolName));
+    .getSchoolRecords()
+    .sort((left, right) =>
+      left.school.schoolName.localeCompare(right.school.schoolName),
+    );
 }
 
 /**

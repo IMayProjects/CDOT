@@ -1268,7 +1268,7 @@
     function populateSchoolDistricts(schools) {
       const select = document.getElementById('school-district-filter');
       const selected = select.value;
-      const districts = [...new Set(schools.map(s => s.district).filter(Boolean))]
+      const districts = [...new Set(schools.map(s => s.school.district).filter(Boolean))]
         .sort((a, b) => a.localeCompare(b));
       select.innerHTML = '<option value="all">All districts</option>' +
         districts.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
@@ -1284,10 +1284,10 @@
       const districtFilter = document.getElementById('school-district-filter')?.value || 'all';
       const emisFilter = (document.getElementById('school-emis-filter')?.value || '').trim().toLowerCase();
       const filtered = allSchools.filter((school) => {
-        const isPilot = school.values.some(v => v.isSample);
+        const isPilot = school.school.isPilot || school.devices.some(v => v.isSample);
         return (pilotFilter === 'all' || (pilotFilter === 'pilot' ? isPilot : !isPilot)) &&
-          (districtFilter === 'all' || school.district === districtFilter) &&
-          (!emisFilter || String(school.emis).toLowerCase().includes(emisFilter));
+          (districtFilter === 'all' || school.school.district === districtFilter) &&
+          (!emisFilter || String(school.school.emis).toLowerCase().includes(emisFilter));
       });
       renderSchoolList(filtered);
     }
@@ -1305,34 +1305,34 @@
       }
 
       list.innerHTML = schools.map((school) => {
-        const isPilot = school.values.some(v => v.isSample);
+        const isPilot = school.school.isPilot || school.devices.some(v => v.isSample);
         return `
         <div class="card fade-in">
           <div class="card-header">
             <div>
-              <div class="card-title">${escapeHtml(school.schoolName || 'Unnamed school')}</div>
+              <div class="card-title">${escapeHtml(school.school.schoolName || 'Unnamed school')}</div>
               <div class="card-meta">
                 <span class="meta-tag">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg>
-                  EMIS ${escapeHtml(school.emis)}
+                  EMIS ${escapeHtml(school.school.emis)}
                 </span>
                 <span class="meta-tag">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                  ${escapeHtml(school.district || 'No district')}
+                  ${escapeHtml(school.school.district || 'No district')}
                 </span>
                 <span class="meta-tag">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-                  ${school.values.length} device${school.values.length === 1 ? '' : 's'}
+                  ${school.devices.length} device${school.devices.length === 1 ? '' : 's'}
                 </span>
               </div>
             </div>
           </div>
           <div class="school-actions">
-            <button class="card-action-btn" onclick="toggleSchoolPilot('${escapeHtml(school.emis)}', ${isPilot ? 'false' : 'true'})" title="${isPilot ? 'Remove all from pilot' : 'Add all to pilot'}">
+            <button class="card-action-btn" onclick="toggleSchoolPilot('${escapeHtml(school.school.emis)}', ${isPilot ? 'false' : 'true'})" title="${isPilot ? 'Remove all from pilot' : 'Add all to pilot'}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2z"></path></svg>
               ${isPilot ? 'Un-Pilot' : 'Set Pilot'}
             </button>
-            <button class="card-action-btn" onclick="viewSchoolDevices('${escapeHtml(school.emis)}')" title="View devices for this school">
+            <button class="card-action-btn" onclick="viewSchoolDevices('${escapeHtml(school.school.emis)}')" title="View devices for this school">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
               View
             </button>

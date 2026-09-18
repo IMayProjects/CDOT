@@ -7,6 +7,12 @@ import {
   AcDevicesColumn,
   ProcessorRecordsSheetName,
 } from "./DeviceRecordFile";
+import {
+  SchoolRecord,
+  SchoolSheetName,
+  SchoolRecordColumn,
+  SchoolRecordTitleRow,
+} from "./SchoolRecordFile";
 
 export class DeviceRepository {
   private static instance: DeviceRepository;
@@ -166,6 +172,35 @@ export class DeviceRepository {
   }
   enablePilotDeployment(serialNumber: string) {
     this.setPilotStatus([serialNumber], true);
+  }
+
+  private getSchoolsSheet(): GoogleAppsScript.Spreadsheet.Sheet {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SchoolSheetName);
+    if (!sheet) throw new Error(`Sheet ${SchoolSheetName} not found.`);
+    return sheet;
+  }
+
+  getAllSchoolRecords(): SchoolRecord[] {
+    const data = this.getSchoolsSheet().getDataRange().getValues();
+    return data.slice(SchoolRecordTitleRow)
+      .filter((row) => row[SchoolRecordColumn.EMIS])
+      .map((row) => ({
+        emis: String(row[SchoolRecordColumn.EMIS] || "").trim(),
+        schoolName: String(row[SchoolRecordColumn.SCHOOL_NAME] || ""),
+        district: String(row[SchoolRecordColumn.DISTRICT] || ""),
+        isPilot: Boolean(row[SchoolRecordColumn.PILOT_FLAG] == "1" || row[SchoolRecordColumn.PILOT_FLAG] === true),
+      }));
+  }
+
+  setSchoolPilotFlag(emisNumber: string, status: boolean): void {
+    const sheet = this.getSchoolsSheet();
+    const data = sheet.getDataRange().getValues();
+    for (let i = SchoolRecordTitleRow; i < data.length; i++) {
+      if (String(data[i][SchoolRecordColumn.EMIS] || "").trim() === emisNumber.trim()) {
+        sheet.getRange(i + 1, SchoolRecordColumn.PILOT_FLAG + 1).setValue(status ? 1 : 0);
+        return;
+      }
+    }
   }
   disablePilotDeployment(serialNumber: string) {
     this.setPilotStatus([serialNumber], false);

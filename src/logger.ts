@@ -18,6 +18,8 @@ const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
 };
 
 export class AppLogger {
+  private static readonly MAX_STACK_LINES = 20;
+  private static readonly MAX_STACK_LENGTH = 8000;
   private static getSheet(): GoogleAppsScript.Spreadsheet.Sheet | null {
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
     if (!spreadsheet) return null;
@@ -44,13 +46,23 @@ export class AppLogger {
 
     if (error && error.stack) {
       // Abbreviated stack trace (first 3 lines)
-      stackTrace = String(error.stack).split("\n").slice(0, 3).join("\n");
+      stackTrace = String(error.stack)
+        .split("\n")
+        .slice(0, this.MAX_STACK_LINES)
+        .join("\n");
     } else if (level === LogLevel.ERROR || level === LogLevel.FATAL) {
       // Generate a stack trace if none provided for errors
       const stack = new Error().stack;
       if (stack) {
-        stackTrace = stack.split("\n").slice(2, 5).join("\n");
+        stackTrace = stack
+          .split("\n")
+          .slice(2, 2 + this.MAX_STACK_LINES)
+          .join("\n");
       }
+    }
+
+    if (stackTrace.length > this.MAX_STACK_LENGTH) {
+      stackTrace = `${stackTrace.slice(0, this.MAX_STACK_LENGTH)}\n...[truncated]`;
     }
 
     // Also write to standard Apps Script Logger for convenience

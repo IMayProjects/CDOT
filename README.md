@@ -4,6 +4,8 @@ CDOT is a Google Apps Script sidebar and batch processor for managing ChromeOS d
 
 It combines spreadsheet-backed records with the Admin Directory advanced service. Operators can review schools and devices, toggle pilot status, stage target OUs, migrate individual devices, run school-level bulk actions, and recover missing OUs after a failed migration.
 
+> **Pilot project context:** References to a device or school being **pilot** or **piloted**, including pilot flags, Pilot/Un-Pilot controls, pilot-based OU suggestions, and school/device bulk pilot operations, refer to the specific project this tool supports: piloting a Chrome extension in managed guest sessions on Chromebooks. These features identify and prepare the Chromebook population participating in that extension pilot; they are not a generic experimentation framework.
+
 ## Features
 
 - School directory loaded directly from the `schools` sheet.
@@ -20,6 +22,10 @@ It combines spreadsheet-backed records with the Admin Directory advanced service
 - Clickable Current and Target OU paths copy to the clipboard.
 - Interactive button states show progress, success, partial completion, failure, and retry availability.
 - Configurable structured logging to the `master_log` sheet and Apps Script logs.
+
+### Pilot feature scope
+
+Pilot-related behavior is currently hard-coded around this project’s managed-guest-session Chrome extension pilot: pilot flags, pilot toggles, pilot-based target OU parsing, and school/device bulk pilot actions. The implementation is intentionally useful for this project today, but the pilot concept is not yet a fully configurable or reusable subsystem. Future work could move pilot rules, labels, and target-OU policy into configuration or a dedicated domain service.
 
 ## Data sources
 
@@ -76,7 +82,7 @@ npx.cmd tsc --noEmit
 npm.cmd run build
 ```
 
-The build produces deployable Apps Script files in `dist/`. It bundles the Core and UI entry points and copies `UI.html` and `appsscript.json`.
+The build transpiles and bundles the TypeScript source and produces deployable Apps Script files in `dist/`. It bundles the Core and UI entry points and copies `UI.html` and `appsscript.json`. The generated `dist/` directory—not the raw TypeScript source—is what `clasp` pushes to Apps Script.
 
 Deploy with clasp:
 
@@ -98,6 +104,10 @@ npm.cmd run serve
 - `dist/appsscript.json`: Apps Script manifest.
 
 The build script explicitly exposes Apps Script global handlers. When adding a new UI server function, add it to the UI handler list in `scripts/build.js`.
+
+## Development disclosure
+
+This project was developed with the assistance of agentic coding tools. Generated or assisted changes were reviewed, compiled, built, and committed as part of the project workflow; the source files remain the authoritative implementation.
 
 ## Logging
 

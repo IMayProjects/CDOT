@@ -75,6 +75,10 @@ export class DevicesService {
     this.repo.setPilotStatus([serialNumber], status);
   }
 
+  stageDeviceTargetOU(serialNumber: string, targetOU: string): void {
+    this.repo.setDeviceTargetOU(serialNumber, targetOU);
+  }
+
   setSchoolPilotStatus(emisNumber: string, status: boolean): number {
     const records = this.getRecordsByEmisNumber([emisNumber]);
     const serials = records.map((record) => record.serialNumber).filter(Boolean);
@@ -85,7 +89,7 @@ export class DevicesService {
   enrichRecordsWithTargetOU(records: DeviceRecord[]): DeviceRecord[] {
     return records.map((record) => ({
       ...record,
-      targetOrgUnitPath: parseTargetOrgUnit(record),
+      suggestedTargetOrgUnitPath: parseTargetOrgUnit(record),
     }));
   }
 

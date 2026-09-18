@@ -24,6 +24,7 @@ const bundles = [
       "getDistrictsDef",
       "searchDevices",
       "listSchools",
+      "stageDeviceTarget",
       "migrateDeviceToTarget",
       "toggleDevicePilotStatus",
       "toggleSchoolPilotStatus"

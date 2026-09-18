@@ -17,10 +17,16 @@ export function searchDevices(query: DeviceQuery) {
 
 export function migrateDeviceToTarget(
   deviceId: string,
-  targetOuPath: string,
   serialNumber: string,
 ) {
   const service = DevicesService.getInstance();
+  const record = service
+    .getRecordsBySerialNumber([serialNumber])
+    .find((item) => item.deviceId === deviceId);
+  const targetOuPath = record?.targetOrgUnitPath;
+  if (!targetOuPath) {
+    throw new Error(`No staged target OU found for ${serialNumber}`);
+  }
   const updatedDevice = service.moveDeviceToOrgUnit(deviceId, targetOuPath);
   if (updatedDevice && updatedDevice.orgUnitPath === targetOuPath) {
     service.updateCurrentOrgUnit(serialNumber, updatedDevice.orgUnitPath);
@@ -29,6 +35,15 @@ export function migrateDeviceToTarget(
   throw new Error(
     `Migration verification failed. Current OU: ${updatedDevice?.orgUnitPath}`,
   );
+}
+
+export function stageDeviceTarget(
+  serialNumber: string,
+  targetOuPath: string,
+) {
+  if (!targetOuPath) throw new Error("A target OU is required");
+  DevicesService.getInstance().stageDeviceTargetOU(serialNumber, targetOuPath);
+  return { success: true, targetOuPath };
 }
 
 export function toggleDevicePilotStatus(serialNumber: string, status: boolean) {

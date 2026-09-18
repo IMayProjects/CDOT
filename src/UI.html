@@ -1285,6 +1285,7 @@
       return records.map((r) => {
         const isSynced = r.currentOrgUnitPath === r.targetOrgUnitPath;
         const needsMigration = r.targetOrgUnitPath && !isSynced;
+        const suggestedTarget = r.suggestedTargetOrgUnitPath || '';
         return `
         <div class="card fade-in">
           <div class="card-header">
@@ -1304,20 +1305,23 @@
             <span class="ou-label">Current</span>
             <span class="ou-path" title="${escapeHtml(r.currentOrgUnitPath)}">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
           </div>
-          ${r.targetOrgUnitPath ? `
           <div class="device-ou-row" style="border-top:none;padding-top:4px;margin-top:4px;">
             <span class="ou-label">Target</span>
-            <span class="ou-path" title="${escapeHtml(r.targetOrgUnitPath)}">${escapeHtml(r.targetOrgUnitPath)}</span>
+            <span class="ou-path" title="${escapeHtml(r.targetOrgUnitPath || 'Not staged')}">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
             <button class="migrate-btn" id="pilot-${escapeHtml(r.serialNumber)}" onclick="toggleDevicePilot('${escapeHtml(r.serialNumber)}', ${r.isSample ? 'false' : 'true'})">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2z"></path></svg>
               ${r.isSample ? 'Un-Pilot' : 'Set Pilot'}
             </button>
-            ${needsMigration ? `
-            <button class="migrate-btn" id="migrate-${escapeHtml(r.deviceId)}" onclick="migrateDevice('${escapeHtml(r.deviceId)}', '${escapeHtml(r.targetOrgUnitPath)}', '${escapeHtml(r.serialNumber)}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
-              Migrate
+            ${suggestedTarget && suggestedTarget !== r.targetOrgUnitPath ? `
+            <button class="migrate-btn" id="stage-${escapeHtml(r.serialNumber)}" onclick="stageDevice('${escapeHtml(r.serialNumber)}', '${escapeHtml(suggestedTarget)}')">
+              Stage
             </button>` : ''}
-          </div>` : ''}
+            ${needsMigration ? `
+            <button class="migrate-btn" id="migrate-${escapeHtml(r.deviceId)}" onclick="migrateDevice('${escapeHtml(r.deviceId)}', '${escapeHtml(r.serialNumber)}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+              Rush
+            </button>` : ''}
+          </div>
         </div>`;
       }).join('');
     }
@@ -1417,7 +1421,7 @@
     /* ═══════════════════════════════════════════
      * Individual Device Migration
      * ═══════════════════════════════════════════ */
-    function migrateDevice(deviceId, targetOuPath, serialNumber) {
+    function migrateDevice(deviceId, serialNumber) {
       if (typeof google === 'undefined' || !google.script) {
         showToast('Migration requires Apps Script', 'error');
         return;
@@ -1444,7 +1448,15 @@
           btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Failed`;
           showToast(`Failed: ${error.message || error}`, 'error');
         })
-        .migrateDeviceToTarget(deviceId, targetOuPath, serialNumber);
+        .migrateDeviceToTarget(deviceId, serialNumber);
+    }
+
+    function stageDevice(serialNumber, targetOuPath) {
+      if (typeof google === 'undefined' || !google.script) return;
+      google.script.run
+        .withSuccessHandler(() => { showToast(`Staged target OU for ${serialNumber}`, 'success'); reloadDevices(); })
+        .withFailureHandler((error) => showToast(`Stage failed: ${error.message || error}`, 'error'))
+        .stageDeviceTarget(serialNumber, targetOuPath);
     }
 
     function toggleDevicePilot(serialNumber, status) {

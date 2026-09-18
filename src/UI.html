@@ -416,6 +416,9 @@
       min-width: 0;
     }
 
+    .ou-path.copyable { cursor: copy; }
+    .ou-path.copyable:hover { color: var(--text-primary); background: var(--surface-hover); }
+
     .migrate-btn {
       display: inline-flex;
       align-items: center;
@@ -1419,11 +1422,11 @@
           </div>
           <div class="device-ou-row">
             <span class="ou-label">Current</span>
-            <span class="ou-path" title="${escapeHtml(r.currentOrgUnitPath)}">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
+            <span class="ou-path copyable" title="Click to copy" onclick="copyOuPath(this)">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
           </div>
           <div class="device-ou-row" style="border-top:none;padding-top:4px;margin-top:4px;">
             <span class="ou-label">Target</span>
-            <span class="ou-path" title="${escapeHtml(r.targetOrgUnitPath || 'Not staged')}">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
+            <span class="ou-path copyable" title="Click to copy" onclick="copyOuPath(this)">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
           </div>
           <div class="device-actions">
             <button class="migrate-btn" id="pilot-${escapeHtml(r.serialNumber)}" onclick="toggleDevicePilot('${escapeHtml(r.serialNumber)}', ${r.isSample ? 'false' : 'true'})">
@@ -1556,6 +1559,23 @@
     /* ═══════════════════════════════════════════
      * Individual Device Migration
      * ═══════════════════════════════════════════ */
+    function copyOuPath(element) {
+      const value = element.textContent.trim();
+      if (!value || value === '—' || value === 'Not staged') return;
+      const copied = () => showToast('OU path copied to clipboard', 'success');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(copied).catch(() => showToast('Unable to copy OU path', 'error'));
+        return;
+      }
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try { document.execCommand('copy'); copied(); }
+      catch (_) { showToast('Unable to copy OU path', 'error'); }
+      textarea.remove();
+    }
+
     function migrateDevice(deviceId, serialNumber) {
       if (typeof google === 'undefined' || !google.script) {
         showToast('Migration requires Apps Script', 'error');

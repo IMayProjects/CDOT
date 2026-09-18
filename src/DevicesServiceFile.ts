@@ -287,20 +287,8 @@ export class DevicesService {
     const canonicalPath = (path: string) =>
       `/${path.trim().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/")}`;
     const apiPath = (path: string) => path.split("/").filter(Boolean);
-    const units =
-      AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
-    const existing = new Set(
-      units
-        .map((unit) => unit.orgUnitPath)
-        .filter((path): path is string => Boolean(path))
-        .map(canonicalPath),
-    );
-    const unitIds = new Map(
-      units
-        .filter((unit) => unit.orgUnitPath && unit.orgUnitId)
-        .map((unit) => [canonicalPath(unit.orgUnitPath as string), unit.orgUnitId as string]),
-    );
-    existing.add(canonicalPath(rootPath));
+    const unitIds = new Map<string, string>();
+    const existing = new Set<string>();
     try {
       const rootUnit = AdminDirectory.Orgunits.get(customerId, apiPath(rootPath));
       if (rootUnit.orgUnitId) unitIds.set(canonicalPath(rootPath), rootUnit.orgUnitId);
@@ -324,17 +312,17 @@ export class DevicesService {
     }
     for (const name of pathParts) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
-      if (!existing.has(canonicalPath(path))) {
-        try {
-          const existingUnit = AdminDirectory.Orgunits.get(customerId, apiPath(path));
-          existing.add(canonicalPath(path));
-          if (existingUnit.orgUnitId) unitIds.set(canonicalPath(path), existingUnit.orgUnitId);
-          AppLogger.info2(`OU already exists, skipping creation: ${path}`);
-        } catch (_) {
-          // A not-found response means this path is the next one to create.
-        }
+      let existingUnit: GoogleAppsScript.AdminDirectory.Schema.OrgUnit | undefined;
+      try {
+        existingUnit = AdminDirectory.Orgunits.get(customerId, apiPath(path));
+      } catch (_) {
+        // A not-found response means this path is the next one to create.
       }
-      if (!existing.has(canonicalPath(path))) {
+      if (existingUnit) {
+        existing.add(canonicalPath(path));
+        if (existingUnit.orgUnitId) unitIds.set(canonicalPath(path), existingUnit.orgUnitId);
+        AppLogger.info2(`OU already exists, skipping creation: ${path}`);
+      } else {
         const parentOrgUnitId = unitIds.get(canonicalPath(parentPath));
         if (!parentOrgUnitId) throw new Error(`Parent OU ID not found for ${parentPath}`);
         const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {

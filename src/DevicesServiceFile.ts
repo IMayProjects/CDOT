@@ -75,16 +75,22 @@ export class DevicesService {
   }
 
   setDevicePilotStatus(serialNumber: string, status: boolean): void {
-    AppLogger.info1(`Setting pilot status for device ${serialNumber}: ${status}`);
+    AppLogger.info1(
+      `Setting pilot status for device ${serialNumber}: ${status}`,
+    );
     this.repo.setPilotStatus([serialNumber], status);
   }
 
   stageDeviceTargetOU(serialNumber: string, targetOU: string): void {
     const record = this.getRecordsBySerialNumber([serialNumber])[0];
     if (!record?.deviceId) {
-      throw new Error(`Device ${serialNumber} is not registered in Admin Console`);
+      throw new Error(
+        `Device ${serialNumber} is not registered in Admin Console`,
+      );
     }
-    AppLogger.info1(`Staging target OU for device ${serialNumber}: ${targetOU}`);
+    AppLogger.info1(
+      `Staging target OU for device ${serialNumber}: ${targetOU}`,
+    );
     this.repo.setDeviceTargetOU(serialNumber, targetOU);
   }
 
@@ -110,7 +116,11 @@ export class DevicesService {
     let migrated = 0;
     let failed = 0;
     for (const record of records) {
-      if (!record.deviceId || !record.serialNumber || !record.targetOrgUnitPath) {
+      if (
+        !record.deviceId ||
+        !record.serialNumber ||
+        !record.targetOrgUnitPath
+      ) {
         continue;
       }
       try {
@@ -125,11 +135,16 @@ export class DevicesService {
         this.repo.updateCurrentOU(record.serialNumber, updated.orgUnitPath);
         migrated++;
       } catch (error) {
-        AppLogger.error(`Bulk rush failed for device ${record.deviceId}`, error);
+        AppLogger.error(
+          `Bulk rush failed for device ${record.deviceId}`,
+          error,
+        );
         failed++;
       }
     }
-    AppLogger.info1(`Completed bulk rush for school ${emisNumber}: ${migrated} migrated, ${failed} failed`);
+    AppLogger.info1(
+      `Completed bulk rush for school ${emisNumber}: ${migrated} migrated, ${failed} failed`,
+    );
     return { migrated, failed };
   }
 
@@ -255,7 +270,7 @@ export class DevicesService {
     );
   }
 
-  createMissingOrgUnits(orgUnitPath: string): string[] {
+  createMissingOrgUnits(orgUnitPath: string, description: string): string[] {
     const normalized = orgUnitPath.trim().replace(/\\+/g, "/");
     if (!normalized.startsWith("/")) {
       throw new Error(`Invalid organizational unit path: ${orgUnitPath}`);
@@ -274,7 +289,7 @@ export class DevicesService {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(path)) {
         const createdUnit = AdminDirectory.Orgunits.insert(
-          { name, parentOrgUnitPath: parentPath },
+          { name, parentOrgUnitPath: parentPath, description: description },
           customerId,
         );
         existing.add(path);

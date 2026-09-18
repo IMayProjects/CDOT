@@ -107,7 +107,7 @@ export function logUiOutcome(
   detail: string,
 ) {
   const message = `UI ${outcome}: ${action}${detail ? ` — ${detail}` : ""}`;
-  if (outcome === "failure") AppLogger.error(message);
+  if (outcome === "failure") AppLogger.error(message, new Error(detail));
   else AppLogger.info1(message);
   return { success: true };
 }

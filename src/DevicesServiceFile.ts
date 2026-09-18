@@ -270,16 +270,20 @@ export class DevicesService {
     );
   }
 
-  createMissingOrgUnits(orgUnitPath: string, description: string): string[] {
+  createMissingOrgUnits(orgUnitPath: string, schoolName: string): string[] {
     const normalized = orgUnitPath.trim().replace(/\\+/g, "/");
     if (!normalized.startsWith("/")) {
       throw new Error(`Invalid organizational unit path: ${orgUnitPath}`);
     }
     const customerId = Globals.retrieveCustomerId();
+    const units = AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
     const existing = new Set(
-      (AdminDirectory.Orgunits.list(customerId).organizationUnits || [])
-        .map((unit) => unit.orgUnitPath)
-        .filter((path): path is string => Boolean(path)),
+      units.map((unit) => unit.orgUnitPath).filter((path): path is string => Boolean(path)),
+    );
+    const unitIds = new Map(
+      units
+        .filter((unit) => unit.orgUnitPath && unit.orgUnitId)
+        .map((unit) => [unit.orgUnitPath as string, unit.orgUnitId as string]),
     );
     existing.add("/");
 
@@ -288,11 +292,16 @@ export class DevicesService {
     for (const name of normalized.split("/").filter(Boolean)) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(path)) {
-        const createdUnit = AdminDirectory.Orgunits.insert(
-          { name, parentOrgUnitPath: parentPath, description: description },
-          customerId,
-        );
+        const parentOrgUnitId = unitIds.get(parentPath);
+        if (!parentOrgUnitId) throw new Error(`Parent OU does not exist: ${parentPath}`);
+        const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
+          name,
+          parentOrgUnitId,
+        };
+        if (/^200\d{6}$/.test(name)) ou.description = schoolName;
+        const createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
         existing.add(path);
+        if (createdUnit.orgUnitId) unitIds.set(path, createdUnit.orgUnitId);
         created.push(createdUnit.orgUnitPath || path);
       }
       parentPath = path;

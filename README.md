@@ -17,6 +17,21 @@ The current deployment is generated from explicit source groups:
 
 ## Timeline
 
+### 2026-09-18 14:06:54 SAST — Direct school records, staged migrations, bulk actions, and registration safeguards
+
+- The Schools tab now reads school identity and pilot flags directly from the `schools` sheet through `SchoolRecord` and `DeviceRepository`, rather than deriving the school list only from device records.
+- `SchoolDevicesRecord` groups each `SchoolRecord` with its matching `DeviceRecord[]` devices.
+- Added Schools-tab filters for pilot status, district, and EMIS number.
+- Centralized UI and processor data operations behind `DevicesService`, including pilot changes, processor records, cache updates, and target-OU enrichment.
+- Renamed the cache sheet integration from `ac_devices` to `admin_console_device_cache` and synchronized the cache after sidebar migrations.
+- Added separate **Stage** and **Rush** actions for devices and schools. Stage persists the deterministic `parseTargetOrgUnit` suggestion to `admin_console_device_cache`; Rush reloads the staged target, performs the Admin Directory move, verifies it, and updates the cache current OU from the verified device.
+- Added bulk school Stage/Rush actions. Unregistered devices are skipped during bulk transactions.
+- Devices without a `deviceId` remain visible and are marked **Unregistered**, but cannot be staged or rushed.
+- Added service- and UI-level operational logging through `AppLogger` to the `master_log` sheet and Apps Script execution log.
+- Reworked device and school card actions into dedicated rows so controls no longer compress or overflow card content.
+
+**Why it matters:** School management now reflects the authoritative school sheet, target OU changes are explicit and auditable before migration, and incomplete/unregistered records cannot be sent to the Admin Directory API.
+
 ### 2026-09-17 — Build handler fix, layout fix, OU casing utility, and codebase audit
 
 - Fixed `scripts/build.js` to expose `migrateDeviceToTarget`, `toggleDevicePilotStatus`, and `toggleSchoolPilotStatus` as global Apps Script handlers. These were missing from the `handlers` array, causing the sidebar buttons to silently fail.
@@ -126,10 +141,13 @@ The current deployment is generated from explicit source groups:
 - `runDeviceMigration` processes rows from `filtered_device_records` and stores progress under `DEVICE_MIGRATION_START_INDEX` in Script Properties.
 - A run stops after about 4.5 minutes; remaining work schedules another run one minute later.
 - Devices with differing current and target OUs are moved through the Admin Directory API.
-- A successful move is verified through a device lookup, then the corresponding `ac_devices` row is updated by serial number.
-- `migrateDeviceToTarget` allows migrating a single device from the sidebar UI, with the same verification logic.
-- Target OUs are determined entirely by the deterministic `parseTargetOrgUnit` algorithm which dynamically overrides the target OU displayed on the frontend based on the district, EMIS number, and pilot status.
-- Pilot statuses (`isSample`) can be toggled per-device or per-school from the UI, updating the `ac_devices` sheet directly. Because `ac_devices` feeds `device_records` through a formula, updating the pilot status naturally recalculates the target OU via the circular data loop without any extra logic.
+- A successful move is verified through a device lookup, then the corresponding `admin_console_device_cache` row is updated by serial number.
+- `migrateDeviceToTarget` allows rushing a single staged device from the sidebar UI; it reloads the persisted target before calling Admin Directory.
+- Target OUs are suggested by the deterministic `parseTargetOrgUnit` algorithm, then explicitly staged into `admin_console_device_cache` before migration.
+- Pilot statuses can be toggled per-device or per-school. School pilot flags are written to `schools`, while matching device pilot values are maintained in `admin_console_device_cache`.
+- The Schools tab reads `SchoolRecord` rows from `schools` and joins matching devices for counts, pilot display, and navigation.
+- Records without a `deviceId` are treated as unregistered: they are visible for review but excluded from Stage and Rush transactions.
+- Service and UI operations write structured events through `AppLogger` to `master_log`.
 - `onOpen` adds the **CDOT Management** menu; `showSidebar` opens `UI.html`.
 - The sidebar uses `google.script.run` to read and save the `theme` preference.
 - The sidebar filter modal queries device records by serial number, EMIS number, district, and sample status. Districts are selected via an interactive checkbox grid.
@@ -137,7 +155,7 @@ The current deployment is generated from explicit source groups:
 
 ## Required Environment
 
-1. Bind the script to the spreadsheet containing `device_records`, `filtered_device_records`, and `ac_devices`.
+1. Bind the script to the spreadsheet containing `schools`, `device_records`, `filtered_device_records`, `admin_console_device_cache`, and `master_log` (the log sheet is created automatically if absent).
 2. Set the `CustomerID` Script Property for the target Google Workspace customer.
 3. Enable the Advanced Google service **Admin Directory API**.
 4. Use an executing account permitted to read the spreadsheet and manage ChromeOS devices.
@@ -161,8 +179,5 @@ npm run serve       # opens http://localhost:3000
 
 ## Next Log Entry Should Cover
 
-- Applying the codebase audit fixes: route all repository calls through `DevicesService`, extract shared `executeMigration` method, deduplicate record parsing.
-- Applying `toTitleCase` (or appropriate casing) to the district name in `parseTargetOrgUnit` to match Google Admin OU paths.
 - A dry-run mode, per-record migration status, retries, and reporting.
 - Automated tests for sheet mapping, OU parsing, and continuation processing.
-

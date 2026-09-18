@@ -223,6 +223,21 @@
       flex-shrink: 0;
     }
 
+    .school-filter-toolbar {
+      flex-wrap: wrap;
+    }
+
+    .school-filter-toolbar select,
+    .school-filter-toolbar input {
+      flex: 1 1 130px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .refresh-btn {
+      margin-left: auto;
+    }
+
     .filter-toolbar select,
     .filter-toolbar input {
       font-family: inherit;
@@ -893,6 +908,10 @@
             <div class="section-title">All Schools</div>
             <div class="section-subtitle">Schools represented in device records</div>
           </div>
+          <button class="pill-btn refresh-btn" onclick="refreshSchools()" title="Refresh schools">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"></path></svg>
+            Refresh
+          </button>
         </div>
         <div class="filter-toolbar school-filter-toolbar">
           <select id="school-pilot-filter" onchange="applySchoolFilters()">
@@ -926,6 +945,10 @@
           <option value="district">Group by district</option>
           <option value="districtSchool">District → School</option>
         </select>
+        <button class="pill-btn refresh-btn" onclick="refreshDevices()" title="Refresh devices">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"></path><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"></path></svg>
+          Refresh
+        </button>
         <span class="filter-info" id="device-result-summary">Loading…</span>
       </div>
       <div class="scroll-area">
@@ -1463,6 +1486,11 @@
         .listSchools();
     }
 
+    function refreshSchools() {
+      showToast('Refreshing schools...', 'info');
+      loadSchools();
+    }
+
     function reloadDevices() {
       const query = getDeviceQuery();
       const summary = document.getElementById('device-result-summary');
@@ -1481,6 +1509,11 @@
           summary.textContent = `Error: ${error.message || error}`;
         })
         .searchDevices(query);
+    }
+
+    function refreshDevices() {
+      showToast('Refreshing devices...', 'info');
+      reloadDevices();
     }
 
     function applyFilters() {

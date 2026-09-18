@@ -296,8 +296,8 @@ export class DevicesService {
       if (!existing.has(path)) {
         const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
           name: name,
-          parentOrgUnitPath: parentPath,
         };
+        if (parentPath !== "/") ou.parentOrgUnitPath = parentPath;
         if (schoolName && descriptionPath === path) ou.description = schoolName;
         const createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
         existing.add(path);

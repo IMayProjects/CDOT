@@ -297,12 +297,28 @@ export class DevicesService {
         .map((unit) => [unit.orgUnitPath as string, unit.orgUnitId as string]),
     );
     existing.add(rootPath);
+    try {
+      const rootUnit = AdminDirectory.Orgunits.get(customerId, [rootPath]);
+      if (rootUnit.orgUnitId) unitIds.set(rootPath, rootUnit.orgUnitId);
+    } catch (error) {
+      throw new Error(`Unable to resolve required root OU ${rootPath}: ${error}`);
+    }
 
     const created: string[] = [];
     let parentPath = rootPath;
     const parts = normalized.split("/").filter(Boolean).slice(1);
     for (const name of parts) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
+      if (!existing.has(path)) {
+        try {
+          const existingUnit = AdminDirectory.Orgunits.get(customerId, [path]);
+          existing.add(path);
+          if (existingUnit.orgUnitId) unitIds.set(path, existingUnit.orgUnitId);
+          AppLogger.info2(`OU already exists, skipping creation: ${path}`);
+        } catch (_) {
+          // A not-found response means this path is the next one to create.
+        }
+      }
       if (!existing.has(path)) {
         const parentOrgUnitId = unitIds.get(parentPath);
         if (!parentOrgUnitId) throw new Error(`Parent OU ID not found for ${parentPath}`);

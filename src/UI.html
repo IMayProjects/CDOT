@@ -362,6 +362,7 @@
     .device-ou-row {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 6px;
       margin-top: 10px;
       padding-top: 10px;
@@ -1240,7 +1241,9 @@
         return;
       }
 
-      list.innerHTML = schools.map((school) => `
+      list.innerHTML = schools.map((school) => {
+        const isPilot = school.values.some(v => v.isSample);
+        return `
         <div class="card fade-in">
           <div class="card-header">
             <div>
@@ -1260,13 +1263,18 @@
                 </span>
               </div>
             </div>
+            <button class="card-action-btn" onclick="toggleSchoolPilot('${escapeHtml(school.emis)}', ${isPilot ? 'false' : 'true'})" title="${isPilot ? 'Remove all from pilot' : 'Add all to pilot'}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2z"></path></svg>
+              ${isPilot ? 'Un-Pilot' : 'Set Pilot'}
+            </button>
             <button class="card-action-btn" onclick="viewSchoolDevices('${escapeHtml(school.emis)}')" title="View devices for this school">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
               View
             </button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     /* ═══════════════════════════════════════════
@@ -1300,6 +1308,10 @@
           <div class="device-ou-row" style="border-top:none;padding-top:4px;margin-top:4px;">
             <span class="ou-label">Target</span>
             <span class="ou-path" title="${escapeHtml(r.targetOrgUnitPath)}">${escapeHtml(r.targetOrgUnitPath)}</span>
+            <button class="migrate-btn" id="pilot-${escapeHtml(r.serialNumber)}" onclick="toggleDevicePilot('${escapeHtml(r.serialNumber)}', ${r.isSample ? 'false' : 'true'})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2z"></path></svg>
+              ${r.isSample ? 'Un-Pilot' : 'Set Pilot'}
+            </button>
             ${needsMigration ? `
             <button class="migrate-btn" id="migrate-${escapeHtml(r.deviceId)}" onclick="migrateDevice('${escapeHtml(r.deviceId)}', '${escapeHtml(r.targetOrgUnitPath)}', '${escapeHtml(r.serialNumber)}')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
@@ -1433,6 +1445,34 @@
           showToast(`Failed: ${error.message || error}`, 'error');
         })
         .migrateDeviceToTarget(deviceId, targetOuPath);
+    }
+
+    function toggleDevicePilot(serialNumber, status) {
+      if (typeof google === 'undefined' || !google.script) return;
+      const btn = document.getElementById(`pilot-${serialNumber}`);
+      if (btn) btn.style.opacity = '0.5';
+      google.script.run
+        .withSuccessHandler(() => {
+          showToast(`Updated pilot status for ${serialNumber}`, 'success');
+          reloadDevices();
+        })
+        .withFailureHandler((error) => showToast(`Error: ${error.message}`, 'error'))
+        .toggleDevicePilotStatus(serialNumber, status);
+    }
+
+    function toggleSchoolPilot(emisNumber, status) {
+      if (typeof google === 'undefined' || !google.script) return;
+      showToast('Updating school pilot status...', 'info');
+      google.script.run
+        .withSuccessHandler((res) => {
+          showToast(`Updated pilot status for ${res.count} devices in school`, 'success');
+          loadSchools();
+          // if we are looking at this school's devices, reload them
+          const query = getDeviceQuery();
+          if (query.schoolEmis === emisNumber) reloadDevices();
+        })
+        .withFailureHandler((error) => showToast(`Error: ${error.message}`, 'error'))
+        .toggleSchoolPilotStatus(emisNumber, status);
     }
   </script>
 </body>

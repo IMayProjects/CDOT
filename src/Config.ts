@@ -19,14 +19,14 @@ export function getDistrictsDef() {
   return DistrictsDef;
 }
 
-export enum ConfigKeys {
+export enum PreferenceKeys {
   THEME = "theme",
   QUERY_JOIN_MODE = "queryJoinMode",
 }
 
 const DEFAULT_CONFIG: Record<string, string> = {
-  [ConfigKeys.THEME]: "dark",
-  [ConfigKeys.QUERY_JOIN_MODE]: "AND",
+  [PreferenceKeys.THEME]: "dark",
+  [PreferenceKeys.QUERY_JOIN_MODE]: "AND",
 };
 
 export class PreferencesService {
@@ -76,12 +76,12 @@ export class PreferencesService {
     return config;
   }
 
-  public getPreference(key: ConfigKeys): string {
+  public getPreference(key: PreferenceKeys): string {
     const config = this.getAllPreferences();
     return config[key];
   }
 
-  public setPreference(key: ConfigKeys, value: string): void {
+  public setPreference(key: PreferenceKeys, value: string): void {
     const sheet = this.getSheet();
     const data = sheet.getDataRange().getValues();
 
@@ -107,6 +107,6 @@ export function getClientConfig() {
   return PreferencesService.getInstance().getAllPreferences();
 }
 
-export function saveClientConfig(key: ConfigKeys, value: string) {
+export function saveClientConfig(key: PreferenceKeys, value: string) {
   PreferencesService.getInstance().setPreference(key, value);
 }

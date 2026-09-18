@@ -126,36 +126,48 @@ export class DeviceRepository {
     }
   }
 
-  updateTargetOU(serialNumber: string, orgUnitPath: string) {
+  setDeviceTargetOU(serialNumber: string, orgUnitPath: string) {
+    this.setDeviceTargetOUs([serialNumber], orgUnitPath);
+  }
+
+  setDeviceTargetOUs(serialNumbers: string[], orgUnitPath: string) {
+    if (serialNumbers.length === 0) return;
     const sheet = this.getAcSheet();
     const data = sheet.getDataRange().getValues();
+    const serialSet = new Set(serialNumbers);
+
+    // Instead of doing multiple setValue calls which is slow, we can collect updates
+    // But for a simple script, doing a few setValue is fine, or setting a range if they are contiguous.
+    // Let's just loop and setValue for simplicity, but avoid searching from the start every time.
     for (let i = 1; i < data.length; i++) {
-      if (data[i][AcDevicesColumn.SERIAL_NUMBER] === serialNumber) {
+      if (serialSet.has(data[i][AcDevicesColumn.SERIAL_NUMBER])) {
         sheet
           .getRange(i + 1, AcDevicesColumn.TARGET_OU_PATH + 1)
           .setValue(orgUnitPath);
-        break;
+        serialSet.delete(data[i][AcDevicesColumn.SERIAL_NUMBER]);
+        if (serialSet.size === 0) break;
+      }
+    }
+  }
+  setPilotStatus(serialNumbers: string[], status: boolean) {
+    if (serialNumbers.length === 0) return;
+    const acSheet = this.getAcSheet();
+    const data = acSheet.getDataRange().getValues();
+    const serialSet = new Set(serialNumbers);
+    const value = status ? 1 : 0;
+
+    for (let i = 1; i < data.length; i++) {
+      if (serialSet.has(data[i][AcDevicesColumn.SERIAL_NUMBER])) {
+        acSheet.getRange(i + 1, AcDevicesColumn.IS_SAMPLE + 1).setValue(value);
+        serialSet.delete(data[i][AcDevicesColumn.SERIAL_NUMBER]);
+        if (serialSet.size === 0) break;
       }
     }
   }
   enablePilotDeployment(serialNumber: string) {
-    const acSheet = this.getAcSheet();
-    const data = acSheet.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][AcDevicesColumn.SERIAL_NUMBER] === serialNumber) {
-        acSheet.getRange(i + 1, AcDevicesColumn.IS_SAMPLE + 1).setValue(1);
-        break;
-      }
-    }
+    this.setPilotStatus([serialNumber], true);
   }
   disablePilotDeployment(serialNumber: string) {
-    const acSheet = this.getAcSheet();
-    const data = acSheet.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][AcDevicesColumn.SERIAL_NUMBER] === serialNumber) {
-        acSheet.getRange(i + 1, AcDevicesColumn.IS_SAMPLE + 1).setValue(0);
-        break;
-      }
-    }
+    this.setPilotStatus([serialNumber], false);
   }
 }

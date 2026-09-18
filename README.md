@@ -17,6 +17,29 @@ The current deployment is generated from explicit source groups:
 
 ## Timeline
 
+### 2026-09-17 — Build handler fix, layout fix, OU casing utility, and codebase audit
+
+- Fixed `scripts/build.js` to expose `migrateDeviceToTarget`, `toggleDevicePilotStatus`, and `toggleSchoolPilotStatus` as global Apps Script handlers. These were missing from the `handlers` array, causing the sidebar buttons to silently fail.
+- Fixed device card layout overflow by adding `flex-wrap: wrap` to `.device-ou-row` so the Pilot and Migrate buttons no longer obscure the OU path text.
+- Added `toTitleCase(str)` utility to `organizational_units.ts` for normalizing district name casing when building OU paths.
+- Conducted a full codebase audit (see `.agent-artifacts/codebase-review.md`) identifying duplicated responsibilities and misdirected dependencies:
+  - `UI.ts` bypasses `DevicesService` and calls `DeviceRepository` directly for pilot status changes.
+  - `migrateDeviceToTarget` (UI path) does not update the `ac_devices` sheet after a successful move, unlike the batch processor — breaking the circular data loop.
+  - `getAllProcessorRecords` and `getAllRecords` in `DeviceRepository` are copy-pasted (30 identical lines of row→record mapping).
+  - `getRecordsBySchool` is dead code duplicating `getRecordsByEmisNumber`.
+  - `enablePilotDeployment`/`disablePilotDeployment` are now dead wrappers around `setPilotStatus`.
+
+**Why it matters:** The sidebar buttons were non-functional in production because the build step didn't expose them. The audit identified that the UI migration path silently skips the `ac_devices` update, causing stale data in the circular data loop.
+
+### 2026-09-17 — Automatic Target OU Generation and Batch Pilot Status Controls
+
+- Made `parseTargetOrgUnit` the singular decider for a device's target OU path. The target OU path is now dynamically computed in `searchDevices` on the backend, meaning the UI automatically suggests and defaults to the correct target OU without requiring any manual text input or dropdown selection from the user.
+- Added individual **Set Pilot / Un-Pilot** toggles on device cards.
+- Added batch **Set Pilot / Un-Pilot** toggles on school cards to affect all devices within that school's `emisNumber`.
+- Verified and documented the circular data loop architecture: The pilot toggles write directly to the `ac_devices` sheet, which in turn feeds into `device_records` via a formula. The UI automatically displays the newly generated target OU as a result of this data propagation.
+
+**Why it matters:** The operator no longer needs to manually construct or paste OU paths. Target OUs are deterministically and automatically generated based on the district, EMIS number, and pilot status. Managing the pilot rollout is as simple as flipping a switch in the sidebar for either an individual device or an entire school.
+
 ### 2026-09-17 — UI redesign, per-device migration, and dev preview
 
 - Rebuilt `UI.html` with a modern Vercel/v0-grade dark theme: zinc color palette, subtle glassmorphic modals with backdrop blur, custom toggle switches, shimmer loading skeletons, and toast notifications.
@@ -105,6 +128,8 @@ The current deployment is generated from explicit source groups:
 - Devices with differing current and target OUs are moved through the Admin Directory API.
 - A successful move is verified through a device lookup, then the corresponding `ac_devices` row is updated by serial number.
 - `migrateDeviceToTarget` allows migrating a single device from the sidebar UI, with the same verification logic.
+- Target OUs are determined entirely by the deterministic `parseTargetOrgUnit` algorithm which dynamically overrides the target OU displayed on the frontend based on the district, EMIS number, and pilot status.
+- Pilot statuses (`isSample`) can be toggled per-device or per-school from the UI, updating the `ac_devices` sheet directly. Because `ac_devices` feeds `device_records` through a formula, updating the pilot status naturally recalculates the target OU via the circular data loop without any extra logic.
 - `onOpen` adds the **CDOT Management** menu; `showSidebar` opens `UI.html`.
 - The sidebar uses `google.script.run` to read and save the `theme` preference.
 - The sidebar filter modal queries device records by serial number, EMIS number, district, and sample status. Districts are selected via an interactive checkbox grid.
@@ -136,8 +161,8 @@ npm run serve       # opens http://localhost:3000
 
 ## Next Log Entry Should Cover
 
-- The final relationship and validation rules between `filtered_device_records` and `ac_devices`.
-- Whether target OUs are always precomputed in Sheets or derived during migration.
+- Applying the codebase audit fixes: route all repository calls through `DevicesService`, extract shared `executeMigration` method, deduplicate record parsing.
+- Applying `toTitleCase` (or appropriate casing) to the district name in `parseTargetOrgUnit` to match Google Admin OU paths.
 - A dry-run mode, per-record migration status, retries, and reporting.
 - Automated tests for sheet mapping, OU parsing, and continuation processing.
 

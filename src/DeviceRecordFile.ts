@@ -25,9 +25,9 @@ export interface DeviceRecord {
 
 export const AcDevicesSheetName = "ac_devices";
 export const AcDevicesColumn = {
-  SERIAL_NUMBER: 1,
-  DEVICE_ID: 2,
-  CURRENT_OU_PATH: 3,
-  TARGET_OU_PATH: 4,
-  IS_SAMPLE: 5,
+  SERIAL_NUMBER: 0,
+  DEVICE_ID: 1,
+  CURRENT_OU_PATH: 2,
+  TARGET_OU_PATH: 3,
+  IS_SAMPLE: 4,
 };

@@ -1,9 +1,18 @@
 export { getClientConfig, saveClientConfig, getDistrictsDef } from "./Config";
+import { DeviceRepository } from "./DeviceReposirotyFile";
 import { DevicesService } from "./DevicesServiceFile";
 import { DeviceQuery, groupDevices, queryDevices } from "./Queries";
 
+import { parseTargetOrgUnit } from "./organizational_units";
+
 export function searchDevices(query: DeviceQuery) {
-  const records = queryDevices(DevicesService.getInstance().getAllRecords(), query);
+  const records = queryDevices(
+    DevicesService.getInstance().getAllRecords(),
+    query,
+  ).map((record) => ({
+    ...record,
+    targetOrgUnitPath: parseTargetOrgUnit(record),
+  }));
   return {
     records,
     groups: groupDevices(records, query.groupBy),
@@ -16,7 +25,25 @@ export function migrateDeviceToTarget(deviceId: string, targetOuPath: string) {
   if (updatedDevice && updatedDevice.orgUnitPath === targetOuPath) {
     return { success: true, newOuPath: updatedDevice.orgUnitPath };
   }
-  throw new Error(`Migration verification failed. Current OU: ${updatedDevice?.orgUnitPath}`);
+  throw new Error(
+    `Migration verification failed. Current OU: ${updatedDevice?.orgUnitPath}`,
+  );
+}
+
+export function toggleDevicePilotStatus(serialNumber: string, status: boolean) {
+  DeviceRepository.getInstance().setPilotStatus([serialNumber], status);
+  return { success: true };
+}
+
+export function toggleSchoolPilotStatus(emisNumber: string, status: boolean) {
+  const records = DevicesService.getInstance().getRecordsByEmisNumber([
+    emisNumber,
+  ]);
+  const serials = records.map((r) => r.serialNumber).filter(Boolean);
+  if (serials.length > 0) {
+    DeviceRepository.getInstance().setPilotStatus(serials, status);
+  }
+  return { success: true, count: serials.length };
 }
 
 export function listSchools() {

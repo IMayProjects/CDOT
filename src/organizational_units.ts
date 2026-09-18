@@ -27,7 +27,7 @@ export function parseTargetOrgUnit(record: DeviceRecord): string {
   // check if OU is sticky
   if (isStickyOU(record.currentOrgUnitPath)) return record.currentOrgUnitPath;
 
-  let district = record.district;
+  let district = toTitleCase(record.district);
   const emis = record.emisNumber;
 
   if (([ORG_UNIT.AME, ORG_UNIT.AMW] as string[]).includes(district)) {
@@ -41,4 +41,12 @@ export function parseTargetOrgUnit(record: DeviceRecord): string {
 
 export function isStickyOU(ou: string): boolean {
   return stickyOus.some((ous) => ou.endsWith(ous));
+}
+
+export function toTitleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }

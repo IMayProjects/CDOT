@@ -3,6 +3,7 @@ import { Globals } from "./globals";
 import { DeviceRecord } from "./DeviceRecordFile";
 import { SchoolDevicesRecord } from "./SchoolRecordFile";
 import { parseTargetOrgUnit } from "./organizational_units";
+import { AppLogger } from "./logger";
 
 /**
  * Service class for managing devices and school records.
@@ -60,7 +61,9 @@ export class DevicesService {
    * @returns {DeviceRecord[]} An array of all device records.
    */
   getAllRecords(): DeviceRecord[] {
-    return this.repo.getAllRecords();
+    const records = this.repo.getAllRecords();
+    AppLogger.info2(`Loaded ${records.length} device records`);
+    return records;
   }
 
   getProcessorRecords(): DeviceRecord[] {
@@ -72,14 +75,17 @@ export class DevicesService {
   }
 
   setDevicePilotStatus(serialNumber: string, status: boolean): void {
+    AppLogger.info1(`Setting pilot status for device ${serialNumber}: ${status}`);
     this.repo.setPilotStatus([serialNumber], status);
   }
 
   stageDeviceTargetOU(serialNumber: string, targetOU: string): void {
+    AppLogger.info1(`Staging target OU for device ${serialNumber}: ${targetOU}`);
     this.repo.setDeviceTargetOU(serialNumber, targetOU);
   }
 
   stageSchoolTargets(emisNumber: string): number {
+    AppLogger.info1(`Staging target OUs for school ${emisNumber}`);
     const records = this.getRecordsByEmisNumber([emisNumber]);
     let count = 0;
     for (const record of records) {
@@ -89,10 +95,12 @@ export class DevicesService {
         count++;
       }
     }
+    AppLogger.info1(`Staged ${count} device targets for school ${emisNumber}`);
     return count;
   }
 
   rushSchoolDevices(emisNumber: string): { migrated: number; failed: number } {
+    AppLogger.info1(`Starting bulk rush for school ${emisNumber}`);
     const records = this.getRecordsByEmisNumber([emisNumber]);
     let migrated = 0;
     let failed = 0;
@@ -112,14 +120,17 @@ export class DevicesService {
         }
         this.repo.updateCurrentOU(record.serialNumber, updated.orgUnitPath);
         migrated++;
-      } catch (_) {
+      } catch (error) {
+        AppLogger.error(`Bulk rush failed for device ${record.deviceId}`, error);
         failed++;
       }
     }
+    AppLogger.info1(`Completed bulk rush for school ${emisNumber}: ${migrated} migrated, ${failed} failed`);
     return { migrated, failed };
   }
 
   setSchoolPilotStatus(emisNumber: string, status: boolean): number {
+    AppLogger.info1(`Setting pilot status for school ${emisNumber}: ${status}`);
     const records = this.getRecordsByEmisNumber([emisNumber]);
     const serials = records
       .map((record) => record.serialNumber)
@@ -232,6 +243,7 @@ export class DevicesService {
     org_unit_path: string,
     customer_id: string = Globals.retrieveCustomerId(),
   ): GoogleAppsScript.AdminDirectory.Schema.ChromeOsDevice {
+    AppLogger.info2(`Moving device ${device_id} to ${org_unit_path}`);
     return AdminDirectory.Chromeosdevices.update(
       { orgUnitPath: org_unit_path },
       customer_id,

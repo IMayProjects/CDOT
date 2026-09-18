@@ -279,6 +279,10 @@ export class DevicesService {
     if (!normalized.startsWith("/")) {
       throw new Error(`Invalid organizational unit path: ${orgUnitPath}`);
     }
+    const rootPath = "/Chromebooks";
+    if (normalized !== rootPath && !normalized.startsWith(`${rootPath}/`)) {
+      throw new Error(`Target OU must be beneath ${rootPath}: ${orgUnitPath}`);
+    }
     const customerId = Globals.retrieveCustomerId();
     const units =
       AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
@@ -287,17 +291,18 @@ export class DevicesService {
         .map((unit) => unit.orgUnitPath)
         .filter((path): path is string => Boolean(path)),
     );
-    existing.add("/");
+    existing.add(rootPath);
 
     const created: string[] = [];
-    let parentPath = "/";
-    for (const name of normalized.split("/").filter(Boolean)) {
+    let parentPath = rootPath;
+    const parts = normalized.split("/").filter(Boolean).slice(1);
+    for (const name of parts) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(path)) {
         const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
           name: name,
         };
-        if (parentPath !== "/") ou.parentOrgUnitPath = parentPath;
+        ou.parentOrgUnitPath = parentPath;
         if (schoolName && descriptionPath === path) ou.description = schoolName;
         const createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
         existing.add(path);

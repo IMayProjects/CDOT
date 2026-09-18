@@ -96,6 +96,8 @@ Preview the sidebar locally:
 npm.cmd run serve
 ```
 
+The underlying scripts can also be run directly with Node, for example `node scripts/build.js` or `node scripts/serve.js`. The `package.json` script entries are intentionally retained as documented, repeatable commands for other contributors, builders, and forks of the project.
+
 ## Deployment entry points
 
 - `dist/core.js`: batch migration trigger and processor.

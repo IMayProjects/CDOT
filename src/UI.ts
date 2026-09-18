@@ -17,10 +17,7 @@ export function searchDevices(query: DeviceQuery) {
   };
 }
 
-export function migrateDeviceToTarget(
-  deviceId: string,
-  serialNumber: string,
-) {
+export function migrateDeviceToTarget(deviceId: string, serialNumber: string) {
   AppLogger.info1(`UI rush requested for device ${deviceId} (${serialNumber})`);
   const service = DevicesService.getInstance();
   const record = service
@@ -41,7 +38,9 @@ export function migrateDeviceToTarget(
 }
 
 export function recoverDeviceTargetOU(deviceId: string, serialNumber: string) {
-  AppLogger.info1(`UI OU recovery requested for device ${deviceId} (${serialNumber})`);
+  AppLogger.info1(
+    `UI OU recovery requested for device ${deviceId} (${serialNumber})`,
+  );
   const service = DevicesService.getInstance();
   const record = service
     .getRecordsBySerialNumber([serialNumber])
@@ -56,6 +55,9 @@ export function recoverDeviceTargetOU(deviceId: string, serialNumber: string) {
     currentPath += `/${part}`;
     if (/^200\d{6}$/.test(part)) descriptionPath = currentPath;
   }
+  AppLogger.info1(
+    `UI OU recovery for device ${deviceId} (${serialNumber}): targetOuPath=${record.targetOrgUnitPath}, descriptionPath=${descriptionPath}`,
+  );
   const created = service.createMissingOrgUnits(
     record.targetOrgUnitPath,
     descriptionPath ? record.schoolName : undefined,
@@ -64,10 +66,7 @@ export function recoverDeviceTargetOU(deviceId: string, serialNumber: string) {
   return { success: true, created };
 }
 
-export function stageDeviceTarget(
-  serialNumber: string,
-  targetOuPath: string,
-) {
+export function stageDeviceTarget(serialNumber: string, targetOuPath: string) {
   AppLogger.info1(`UI stage requested for device ${serialNumber}`);
   if (!targetOuPath) throw new Error("A target OU is required");
   DevicesService.getInstance().stageDeviceTargetOU(serialNumber, targetOuPath);
@@ -82,7 +81,10 @@ export function stageSchoolTargets(emisNumber: string) {
 
 export function rushSchoolDevices(emisNumber: string) {
   AppLogger.info1(`UI rush requested for school ${emisNumber}`);
-  return { success: true, ...DevicesService.getInstance().rushSchoolDevices(emisNumber) };
+  return {
+    success: true,
+    ...DevicesService.getInstance().rushSchoolDevices(emisNumber),
+  };
 }
 
 export function toggleDevicePilotStatus(serialNumber: string, status: boolean) {

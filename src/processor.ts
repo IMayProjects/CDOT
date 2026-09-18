@@ -1,4 +1,3 @@
-import { DeviceRepository } from "./DeviceReposirotyFile";
 import { DevicesService } from "./DevicesServiceFile";
 import { AppLogger } from "./logger";
 
@@ -7,11 +6,9 @@ const CONTINUATION_TOKEN_KEY = "DEVICE_MIGRATION_START_INDEX";
 const MAX_EXECUTION_TIME_MS = 4.5 * 60 * 1000;
 
 export class DeviceProcessorService {
-  private repository: DeviceRepository;
   private devicesService: DevicesService;
 
   constructor() {
-    this.repository = DeviceRepository.getInstance();
     this.devicesService = DevicesService.getInstance();
   }
 
@@ -29,7 +26,7 @@ export class DeviceProcessorService {
       startIndex = parseInt(token, 10);
     }
 
-    const allSamples = this.repository.getAllProcessorRecords();
+    const allSamples = this.devicesService.getProcessorRecords();
 
     // If we've processed all records, clear token and exit.
     if (startIndex >= allSamples.length) {
@@ -64,7 +61,7 @@ export class DeviceProcessorService {
               updatedDevice.orgUnitPath === record.targetOrgUnitPath
             ) {
               // Replace current OU with return value from AdminDirectory
-              this.repository.updateCurrentOU(
+              this.devicesService.updateCurrentOrgUnit(
                 record.serialNumber,
                 updatedDevice.orgUnitPath,
               );

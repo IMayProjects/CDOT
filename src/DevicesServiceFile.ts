@@ -2,6 +2,7 @@ import { DeviceRepository } from "./DeviceReposirotyFile";
 import { Globals } from "./globals";
 import { DeviceRecord } from "./DeviceRecordFile";
 import { SchoolRecord } from "./SchoolRecordFile";
+import { parseTargetOrgUnit } from "./organizational_units";
 
 /**
  * Service class for managing devices and school records.
@@ -60,6 +61,32 @@ export class DevicesService {
    */
   getAllRecords(): DeviceRecord[] {
     return this.repo.getAllRecords();
+  }
+
+  getProcessorRecords(): DeviceRecord[] {
+    return this.repo.getAllProcessorRecords();
+  }
+
+  updateCurrentOrgUnit(serialNumber: string, orgUnitPath: string): void {
+    this.repo.updateCurrentOU(serialNumber, orgUnitPath);
+  }
+
+  setDevicePilotStatus(serialNumber: string, status: boolean): void {
+    this.repo.setPilotStatus([serialNumber], status);
+  }
+
+  setSchoolPilotStatus(emisNumber: string, status: boolean): number {
+    const records = this.getRecordsByEmisNumber([emisNumber]);
+    const serials = records.map((record) => record.serialNumber).filter(Boolean);
+    this.repo.setPilotStatus(serials, status);
+    return serials.length;
+  }
+
+  enrichRecordsWithTargetOU(records: DeviceRecord[]): DeviceRecord[] {
+    return records.map((record) => ({
+      ...record,
+      targetOrgUnitPath: parseTargetOrgUnit(record),
+    }));
   }
 
   /**

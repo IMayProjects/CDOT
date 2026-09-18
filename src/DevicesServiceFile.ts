@@ -286,10 +286,18 @@ export class DevicesService {
     const customerId = Globals.retrieveCustomerId();
     const canonicalPath = (path: string) =>
       `/${path.trim().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/")}`;
+    const getOrgUnitByPath = (path: string) =>
+      (AdminDirectory.Orgunits.get as unknown as (
+        customerId: string,
+        orgUnitPath: string,
+      ) => GoogleAppsScript.AdminDirectory.Schema.OrgUnit)(
+        customerId,
+        path.replace(/^\/+/, ""),
+      );
     const unitIds = new Map<string, string>();
     const existing = new Set<string>();
     try {
-      const rootUnit = AdminDirectory.Orgunits.get(customerId, rootPath);
+      const rootUnit = getOrgUnitByPath(rootPath);
       if (rootUnit.orgUnitId) unitIds.set(canonicalPath(rootPath), rootUnit.orgUnitId);
     } catch (error) {
       AppLogger.warn(`Root OU ${rootPath} was not found; creating it`);
@@ -313,7 +321,7 @@ export class DevicesService {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       let existingUnit: GoogleAppsScript.AdminDirectory.Schema.OrgUnit | undefined;
       try {
-        existingUnit = AdminDirectory.Orgunits.get(customerId, path);
+        existingUnit = getOrgUnitByPath(path);
       } catch (_) {
         // A not-found response means this path is the next one to create.
       }

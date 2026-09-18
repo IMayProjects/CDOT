@@ -98,6 +98,17 @@ export function listSchools() {
     );
 }
 
+export function logUiOutcome(
+  action: string,
+  outcome: "success" | "failure",
+  detail: string,
+) {
+  const message = `UI ${outcome}: ${action}${detail ? ` — ${detail}` : ""}`;
+  if (outcome === "failure") AppLogger.error(message);
+  else AppLogger.info1(message);
+  return { success: true };
+}
+
 /**
  * Creates the menu item to launch the sidebar
  */

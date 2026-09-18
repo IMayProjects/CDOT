@@ -1502,10 +1502,12 @@
       summary.textContent = 'Loading…';
       google.script.run
         .withSuccessHandler((result) => {
+          logUiOutcome('device migration', 'success', serialNumber);
           renderDevices(result, query.groupBy);
           summary.textContent = `${result.records.length} device${result.records.length === 1 ? '' : 's'}`;
         })
         .withFailureHandler((error) => {
+          logUiOutcome('device migration', 'failure', error.message || error);
           summary.textContent = `Error: ${error.message || error}`;
         })
         .searchDevices(query);
@@ -1514,6 +1516,11 @@
     function refreshDevices() {
       showToast('Refreshing devices...', 'info');
       reloadDevices();
+    }
+
+    function logUiOutcome(action, outcome, detail) {
+      if (typeof google === 'undefined' || !google.script) return;
+      google.script.run.logUiOutcome(action, outcome, detail || '');
     }
 
     function applyFilters() {
@@ -1563,6 +1570,7 @@
 
       google.script.run
         .withSuccessHandler(() => {
+          logUiOutcome('device pilot toggle', 'success', serialNumber);
           btn.classList.remove('migrating');
           btn.classList.add('success');
           btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Done`;
@@ -1583,32 +1591,32 @@
     function recoverDeviceOU(deviceId, serialNumber) {
       if (typeof google === 'undefined' || !google.script) return;
       google.script.run
-        .withSuccessHandler((result) => { showToast(`Created ${result.created.length} missing OUs`, 'success'); reloadDevices(); })
-        .withFailureHandler((error) => showToast(`OU recovery failed: ${error.message || error}`, 'error'))
+        .withSuccessHandler((result) => { logUiOutcome('OU recovery', 'success', serialNumber); showToast(`Created ${result.created.length} missing OUs`, 'success'); reloadDevices(); })
+        .withFailureHandler((error) => { logUiOutcome('OU recovery', 'failure', error.message || error); showToast(`OU recovery failed: ${error.message || error}`, 'error'); })
         .recoverDeviceTargetOU(deviceId, serialNumber);
     }
 
     function stageDevice(serialNumber, targetOuPath) {
       if (typeof google === 'undefined' || !google.script) return;
       google.script.run
-        .withSuccessHandler(() => { showToast(`Staged target OU for ${serialNumber}`, 'success'); reloadDevices(); })
-        .withFailureHandler((error) => showToast(`Stage failed: ${error.message || error}`, 'error'))
+        .withSuccessHandler(() => { logUiOutcome('device staging', 'success', serialNumber); showToast(`Staged target OU for ${serialNumber}`, 'success'); reloadDevices(); })
+        .withFailureHandler((error) => { logUiOutcome('device staging', 'failure', error.message || error); showToast(`Stage failed: ${error.message || error}`, 'error'); })
         .stageDeviceTarget(serialNumber, targetOuPath);
     }
 
     function stageSchool(emisNumber) {
       if (typeof google === 'undefined' || !google.script) return;
       google.script.run
-        .withSuccessHandler((result) => { showToast(`Staged ${result.count} devices`, 'success'); loadSchools(); })
-        .withFailureHandler((error) => showToast(`Stage failed: ${error.message || error}`, 'error'))
+        .withSuccessHandler((result) => { logUiOutcome('school staging', 'success', emisNumber); showToast(`Staged ${result.count} devices`, 'success'); loadSchools(); })
+        .withFailureHandler((error) => { logUiOutcome('school staging', 'failure', error.message || error); showToast(`Stage failed: ${error.message || error}`, 'error'); })
         .stageSchoolTargets(emisNumber);
     }
 
     function rushSchool(emisNumber) {
       if (typeof google === 'undefined' || !google.script) return;
       google.script.run
-        .withSuccessHandler((result) => { showToast(`Rushed ${result.migrated} devices (${result.failed} failed)`, result.failed ? 'error' : 'success'); loadSchools(); })
-        .withFailureHandler((error) => showToast(`Rush failed: ${error.message || error}`, 'error'))
+        .withSuccessHandler((result) => { logUiOutcome('school rush', result.failed ? 'failure' : 'success', `${emisNumber}: ${result.migrated} migrated, ${result.failed} failed`); showToast(`Rushed ${result.migrated} devices (${result.failed} failed)`, result.failed ? 'error' : 'success'); loadSchools(); })
+        .withFailureHandler((error) => { logUiOutcome('school rush', 'failure', error.message || error); showToast(`Rush failed: ${error.message || error}`, 'error'); })
         .rushSchoolDevices(emisNumber);
     }
 
@@ -1621,7 +1629,7 @@
           showToast(`Updated pilot status for ${serialNumber}`, 'success');
           reloadDevices();
         })
-        .withFailureHandler((error) => showToast(`Error: ${error.message}`, 'error'))
+        .withFailureHandler((error) => { logUiOutcome('device pilot toggle', 'failure', error.message || error); showToast(`Error: ${error.message}`, 'error'); })
         .toggleDevicePilotStatus(serialNumber, status);
     }
 
@@ -1630,13 +1638,14 @@
       showToast('Updating school pilot status...', 'info');
       google.script.run
         .withSuccessHandler((res) => {
+          logUiOutcome('school pilot toggle', 'success', emisNumber);
           showToast(`Updated pilot status for ${res.count} devices in school`, 'success');
           loadSchools();
           // if we are looking at this school's devices, reload them
           const query = getDeviceQuery();
           if (query.schoolEmis === emisNumber) reloadDevices();
         })
-        .withFailureHandler((error) => showToast(`Error: ${error.message}`, 'error'))
+        .withFailureHandler((error) => { logUiOutcome('school pilot toggle', 'failure', error.message || error); showToast(`Error: ${error.message}`, 'error'); })
         .toggleSchoolPilotStatus(emisNumber, status);
     }
   </script>

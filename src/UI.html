@@ -1422,11 +1422,11 @@
           </div>
           <div class="device-ou-row">
             <span class="ou-label">Current</span>
-            <span class="ou-path copyable" title="Click to copy" onclick="copyOuPath(this)">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
+            <span class="ou-path copyable" title="${r.currentOrgUnitPath ? 'Click to copy' : 'No current OU'}" onclick="copyOuPath(this)">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
           </div>
           <div class="device-ou-row" style="border-top:none;padding-top:4px;margin-top:4px;">
             <span class="ou-label">Target</span>
-            <span class="ou-path copyable" title="Click to copy" onclick="copyOuPath(this)">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
+            <span class="ou-path copyable" title="${r.targetOrgUnitPath ? 'Click to copy' : 'Not staged'}" onclick="copyOuPath(this)">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
           </div>
           <div class="device-actions">
             <button class="migrate-btn" id="pilot-${escapeHtml(r.serialNumber)}" onclick="toggleDevicePilot('${escapeHtml(r.serialNumber)}', ${r.isSample ? 'false' : 'true'})">
@@ -1593,6 +1593,7 @@
           logUiOutcome('device migration', 'success', serialNumber);
           btn.classList.remove('migrating');
           btn.classList.add('success');
+          btn.disabled = false;
           btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Done`;
           showToast(`Migrated ${serialNumber}`, 'success');
           // Refresh devices after a short delay
@@ -1601,6 +1602,7 @@
         .withFailureHandler((error) => {
           btn.classList.remove('migrating');
           btn.classList.add('error');
+          btn.disabled = false;
           btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Failed`;
           btn.insertAdjacentHTML('afterend', `<button class="migrate-btn" id="recover-${escapeHtml(deviceId)}" onclick="recoverDeviceOU('${escapeHtml(deviceId)}', '${escapeHtml(serialNumber)}')">Create missing OUs</button>`);
           showToast(`Failed: ${error.message || error}`, 'error');
@@ -1623,7 +1625,7 @@
       const btn = document.getElementById(`stage-${serialNumber}`);
       if (btn) { btn.disabled = true; btn.innerHTML = 'Staging…'; }
       google.script.run
-        .withSuccessHandler(() => { logUiOutcome('device staging', 'success', serialNumber); if (btn) { btn.classList.add('success'); btn.innerHTML = 'Staged'; } showToast(`Staged target OU for ${serialNumber}`, 'success'); reloadDevices(); })
+        .withSuccessHandler(() => { logUiOutcome('device staging', 'success', serialNumber); if (btn) { btn.disabled = false; btn.classList.add('success'); btn.innerHTML = 'Staged'; } showToast(`Staged target OU for ${serialNumber}`, 'success'); setTimeout(reloadDevices, 500); })
         .withFailureHandler((error) => { logUiOutcome('device staging', 'failure', error.message || error); if (btn) { btn.disabled = false; btn.classList.add('error'); btn.innerHTML = 'Retry stage'; } showToast(`Stage failed: ${error.message || error}`, 'error'); })
         .stageDeviceTarget(serialNumber, targetOuPath);
     }
@@ -1633,7 +1635,7 @@
       const btn = document.getElementById(`school-stage-${emisNumber}`);
       if (btn) { btn.disabled = true; btn.innerHTML = 'Staging…'; }
       google.script.run
-        .withSuccessHandler((result) => { logUiOutcome('school staging', 'success', emisNumber); if (btn) { btn.classList.add('success'); btn.innerHTML = 'Staged'; } showToast(`Staged ${result.count} devices`, 'success'); loadSchools(); })
+        .withSuccessHandler((result) => { logUiOutcome('school staging', 'success', emisNumber); if (btn) { btn.disabled = false; btn.classList.add('success'); btn.innerHTML = 'Staged'; } showToast(`Staged ${result.count} devices`, 'success'); setTimeout(loadSchools, 500); })
         .withFailureHandler((error) => { logUiOutcome('school staging', 'failure', error.message || error); if (btn) { btn.disabled = false; btn.classList.add('error'); btn.innerHTML = 'Retry stage'; } showToast(`Stage failed: ${error.message || error}`, 'error'); })
         .stageSchoolTargets(emisNumber);
     }
@@ -1643,7 +1645,7 @@
       const btn = document.getElementById(`school-rush-${emisNumber}`);
       if (btn) { btn.disabled = true; btn.innerHTML = 'Rushing…'; }
       google.script.run
-        .withSuccessHandler((result) => { logUiOutcome('school rush', result.failed ? 'failure' : 'success', `${emisNumber}: ${result.migrated} migrated, ${result.failed} failed`); if (btn) { btn.classList.add(result.failed ? 'error' : 'success'); btn.innerHTML = result.failed ? 'Partial' : 'Rushed'; } showToast(`Rushed ${result.migrated} devices (${result.failed} failed)`, result.failed ? 'error' : 'success'); loadSchools(); })
+        .withSuccessHandler((result) => { logUiOutcome('school rush', result.failed ? 'failure' : 'success', `${emisNumber}: ${result.migrated} migrated, ${result.failed} failed`); if (btn) { btn.disabled = false; btn.classList.add(result.failed ? 'error' : 'success'); btn.innerHTML = result.failed ? 'Partial' : 'Rushed'; } showToast(`Rushed ${result.migrated} devices (${result.failed} failed)`, result.failed ? 'error' : 'success'); setTimeout(loadSchools, 500); })
         .withFailureHandler((error) => { logUiOutcome('school rush', 'failure', error.message || error); if (btn) { btn.disabled = false; btn.classList.add('error'); btn.innerHTML = 'Retry rush'; } showToast(`Rush failed: ${error.message || error}`, 'error'); })
         .rushSchoolDevices(emisNumber);
     }
@@ -1655,9 +1657,9 @@
       google.script.run
         .withSuccessHandler(() => {
           logUiOutcome('device pilot toggle', 'success', serialNumber);
-          if (btn) { btn.classList.add('success'); btn.innerHTML = 'Updated'; }
+          if (btn) { btn.disabled = false; btn.classList.add('success'); btn.innerHTML = 'Updated'; }
           showToast(`Updated pilot status for ${serialNumber}`, 'success');
-          reloadDevices();
+          setTimeout(reloadDevices, 500);
         })
         .withFailureHandler((error) => { logUiOutcome('device pilot toggle', 'failure', error.message || error); if (btn) { btn.disabled = false; btn.classList.add('error'); btn.innerHTML = 'Retry'; } showToast(`Error: ${error.message}`, 'error'); })
         .toggleDevicePilotStatus(serialNumber, status);
@@ -1671,9 +1673,9 @@
       google.script.run
         .withSuccessHandler((res) => {
           logUiOutcome('school pilot toggle', 'success', emisNumber);
-          if (btn) { btn.classList.add('success'); btn.innerHTML = 'Updated'; }
+          if (btn) { btn.disabled = false; btn.classList.add('success'); btn.innerHTML = 'Updated'; }
           showToast(`Updated pilot status for ${res.count} devices in school`, 'success');
-          loadSchools();
+          setTimeout(loadSchools, 500);
           // if we are looking at this school's devices, reload them
           const query = getDeviceQuery();
           if (query.schoolEmis === emisNumber) reloadDevices();

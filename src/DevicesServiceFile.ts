@@ -286,6 +286,7 @@ export class DevicesService {
     const customerId = Globals.retrieveCustomerId();
     const canonicalPath = (path: string) =>
       `/${path.trim().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/")}`;
+    const apiPath = (path: string) => path.split("/").filter(Boolean);
     const units =
       AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
     const existing = new Set(
@@ -301,20 +302,31 @@ export class DevicesService {
     );
     existing.add(canonicalPath(rootPath));
     try {
-      const rootUnit = AdminDirectory.Orgunits.get(customerId, [rootPath]);
+      const rootUnit = AdminDirectory.Orgunits.get(customerId, apiPath(rootPath));
       if (rootUnit.orgUnitId) unitIds.set(canonicalPath(rootPath), rootUnit.orgUnitId);
     } catch (error) {
-      throw new Error(`Unable to resolve required root OU ${rootPath}: ${error}`);
+      AppLogger.warn(`Root OU ${rootPath} was not found; creating it`);
+      const rootUnit = AdminDirectory.Orgunits.insert(
+        { name: "Chromebooks" },
+        customerId,
+      );
+      if (!rootUnit.orgUnitId) {
+        throw new Error(`Created root OU ${rootPath} without an ID`);
+      }
+      unitIds.set(canonicalPath(rootPath), rootUnit.orgUnitId);
     }
 
     const created: string[] = [];
     let parentPath = rootPath;
-    const parts = normalized.split("/").filter(Boolean).slice(1);
-    for (const name of parts) {
+    const pathParts = apiPath(normalized);
+    if (pathParts.shift() !== "Chromebooks") {
+      throw new Error(`Target OU must begin with ${rootPath}: ${orgUnitPath}`);
+    }
+    for (const name of pathParts) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(canonicalPath(path))) {
         try {
-          const existingUnit = AdminDirectory.Orgunits.get(customerId, [path]);
+          const existingUnit = AdminDirectory.Orgunits.get(customerId, apiPath(path));
           existing.add(canonicalPath(path));
           if (existingUnit.orgUnitId) unitIds.set(canonicalPath(path), existingUnit.orgUnitId);
           AppLogger.info2(`OU already exists, skipping creation: ${path}`);

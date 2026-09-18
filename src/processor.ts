@@ -72,13 +72,18 @@ export class DeviceProcessorService {
               AppLogger.warn(
                 `Move verification failed for ${record.serialNumber}. Current OU is ${updatedDevice?.orgUnitPath}`,
               );
+              properties.setProperty(CONTINUATION_TOKEN_KEY, i.toString());
+              AppLogger.warn("Stopping batch after migration verification failure.");
+              return;
             }
           } catch (e: any) {
             AppLogger.error(
               `Error moving device ${record.deviceId}: ${e.message}`,
               e,
             );
-            // Could log error to a sheet or continue
+            properties.setProperty(CONTINUATION_TOKEN_KEY, i.toString());
+            AppLogger.warn("Stopping batch after migration failure.");
+            return;
           }
         } else {
           AppLogger.warn(

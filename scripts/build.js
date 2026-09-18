@@ -27,6 +27,7 @@ const bundles = [
       "stageDeviceTarget",
       "stageSchoolTargets",
       "migrateDeviceToTarget",
+      "recoverDeviceTargetOU",
       "rushSchoolDevices",
       "toggleDevicePilotStatus",
       "toggleSchoolPilotStatus"

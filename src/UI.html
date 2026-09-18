@@ -1520,9 +1520,18 @@
           btn.classList.remove('migrating');
           btn.classList.add('error');
           btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Failed`;
+          btn.insertAdjacentHTML('afterend', `<button class="migrate-btn" id="recover-${escapeHtml(deviceId)}" onclick="recoverDeviceOU('${escapeHtml(deviceId)}', '${escapeHtml(serialNumber)}')">Create missing OUs</button>`);
           showToast(`Failed: ${error.message || error}`, 'error');
         })
         .migrateDeviceToTarget(deviceId, serialNumber);
+    }
+
+    function recoverDeviceOU(deviceId, serialNumber) {
+      if (typeof google === 'undefined' || !google.script) return;
+      google.script.run
+        .withSuccessHandler((result) => { showToast(`Created ${result.created.length} missing OUs`, 'success'); reloadDevices(); })
+        .withFailureHandler((error) => showToast(`OU recovery failed: ${error.message || error}`, 'error'))
+        .recoverDeviceTargetOU(deviceId, serialNumber);
     }
 
     function stageDevice(serialNumber, targetOuPath) {

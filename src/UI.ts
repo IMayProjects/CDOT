@@ -40,6 +40,19 @@ export function migrateDeviceToTarget(
   );
 }
 
+export function recoverDeviceTargetOU(deviceId: string, serialNumber: string) {
+  AppLogger.info1(`UI OU recovery requested for device ${deviceId} (${serialNumber})`);
+  const service = DevicesService.getInstance();
+  const record = service
+    .getRecordsBySerialNumber([serialNumber])
+    .find((item) => item.deviceId === deviceId);
+  if (!record?.targetOrgUnitPath) {
+    throw new Error(`No staged target OU found for ${serialNumber}`);
+  }
+  const created = service.createMissingOrgUnits(record.targetOrgUnitPath);
+  return { success: true, created };
+}
+
 export function stageDeviceTarget(
   serialNumber: string,
   targetOuPath: string,

@@ -254,4 +254,35 @@ export class DevicesService {
       device_id,
     );
   }
+
+  createMissingOrgUnits(orgUnitPath: string): string[] {
+    const normalized = orgUnitPath.trim().replace(/\\+/g, "/");
+    if (!normalized.startsWith("/")) {
+      throw new Error(`Invalid organizational unit path: ${orgUnitPath}`);
+    }
+    const customerId = Globals.retrieveCustomerId();
+    const existing = new Set(
+      (AdminDirectory.Orgunits.list(customerId).organizationUnits || [])
+        .map((unit) => unit.orgUnitPath)
+        .filter((path): path is string => Boolean(path)),
+    );
+    existing.add("/");
+
+    const created: string[] = [];
+    let parentPath = "/";
+    for (const name of normalized.split("/").filter(Boolean)) {
+      const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
+      if (!existing.has(path)) {
+        AdminDirectory.Orgunits.insert(
+          { name, orgUnitPath: path, parentOrgUnitPath: parentPath },
+          customerId,
+        );
+        existing.add(path);
+        created.push(path);
+      }
+      parentPath = path;
+    }
+    AppLogger.info1(`Created ${created.length} missing OUs for ${normalized}`);
+    return created;
+  }
 }

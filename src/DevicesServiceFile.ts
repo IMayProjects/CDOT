@@ -284,22 +284,25 @@ export class DevicesService {
       throw new Error(`Target OU must be beneath ${rootPath}: ${orgUnitPath}`);
     }
     const customerId = Globals.retrieveCustomerId();
+    const canonicalPath = (path: string) =>
+      `/${path.trim().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/")}`.toLowerCase();
     const units =
       AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
     const existing = new Set(
       units
         .map((unit) => unit.orgUnitPath)
-        .filter((path): path is string => Boolean(path)),
+        .filter((path): path is string => Boolean(path))
+        .map(canonicalPath),
     );
     const unitIds = new Map(
       units
         .filter((unit) => unit.orgUnitPath && unit.orgUnitId)
-        .map((unit) => [unit.orgUnitPath as string, unit.orgUnitId as string]),
+        .map((unit) => [canonicalPath(unit.orgUnitPath as string), unit.orgUnitId as string]),
     );
-    existing.add(rootPath);
+    existing.add(canonicalPath(rootPath));
     try {
       const rootUnit = AdminDirectory.Orgunits.get(customerId, [rootPath]);
-      if (rootUnit.orgUnitId) unitIds.set(rootPath, rootUnit.orgUnitId);
+      if (rootUnit.orgUnitId) unitIds.set(canonicalPath(rootPath), rootUnit.orgUnitId);
     } catch (error) {
       throw new Error(`Unable to resolve required root OU ${rootPath}: ${error}`);
     }
@@ -309,18 +312,18 @@ export class DevicesService {
     const parts = normalized.split("/").filter(Boolean).slice(1);
     for (const name of parts) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
-      if (!existing.has(path)) {
+      if (!existing.has(canonicalPath(path))) {
         try {
           const existingUnit = AdminDirectory.Orgunits.get(customerId, [path]);
-          existing.add(path);
-          if (existingUnit.orgUnitId) unitIds.set(path, existingUnit.orgUnitId);
+          existing.add(canonicalPath(path));
+          if (existingUnit.orgUnitId) unitIds.set(canonicalPath(path), existingUnit.orgUnitId);
           AppLogger.info2(`OU already exists, skipping creation: ${path}`);
         } catch (_) {
           // A not-found response means this path is the next one to create.
         }
       }
-      if (!existing.has(path)) {
-        const parentOrgUnitId = unitIds.get(parentPath);
+      if (!existing.has(canonicalPath(path))) {
+        const parentOrgUnitId = unitIds.get(canonicalPath(parentPath));
         if (!parentOrgUnitId) throw new Error(`Parent OU ID not found for ${parentPath}`);
         const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
           name,
@@ -340,8 +343,8 @@ export class DevicesService {
           if (schoolName && descriptionPath === path) pathPayload.description = schoolName;
           createdUnit = AdminDirectory.Orgunits.insert(pathPayload, customerId);
         }
-        existing.add(path);
-        if (createdUnit.orgUnitId) unitIds.set(path, createdUnit.orgUnitId);
+        existing.add(canonicalPath(path));
+        if (createdUnit.orgUnitId) unitIds.set(canonicalPath(path), createdUnit.orgUnitId);
         created.push(createdUnit.orgUnitPath || path);
       }
       parentPath = path;

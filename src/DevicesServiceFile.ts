@@ -311,7 +311,19 @@ export class DevicesService {
           parentOrgUnitId,
         };
         if (schoolName && descriptionPath === path) ou.description = schoolName;
-        const createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
+        AppLogger.info2(`Creating OU ${path} with parent ${parentPath} (${parentOrgUnitId})`);
+        let createdUnit: GoogleAppsScript.AdminDirectory.Schema.OrgUnit;
+        try {
+          createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
+        } catch (error) {
+          AppLogger.warn(`OU ID insert failed for ${path}; retrying with parent path`);
+          const pathPayload: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
+            name,
+            parentOrgUnitPath: parentPath,
+          };
+          if (schoolName && descriptionPath === path) pathPayload.description = schoolName;
+          createdUnit = AdminDirectory.Orgunits.insert(pathPayload, customerId);
+        }
         existing.add(path);
         if (createdUnit.orgUnitId) unitIds.set(path, createdUnit.orgUnitId);
         created.push(createdUnit.orgUnitPath || path);

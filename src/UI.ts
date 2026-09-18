@@ -15,10 +15,15 @@ export function searchDevices(query: DeviceQuery) {
   };
 }
 
-export function migrateDeviceToTarget(deviceId: string, targetOuPath: string) {
+export function migrateDeviceToTarget(
+  deviceId: string,
+  targetOuPath: string,
+  serialNumber: string,
+) {
   const service = DevicesService.getInstance();
   const updatedDevice = service.moveDeviceToOrgUnit(deviceId, targetOuPath);
   if (updatedDevice && updatedDevice.orgUnitPath === targetOuPath) {
+    service.updateCurrentOrgUnit(serialNumber, updatedDevice.orgUnitPath);
     return { success: true, newOuPath: updatedDevice.orgUnitPath };
   }
   throw new Error(

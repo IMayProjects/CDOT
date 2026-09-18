@@ -49,9 +49,17 @@ export function recoverDeviceTargetOU(deviceId: string, serialNumber: string) {
   if (!record?.targetOrgUnitPath) {
     throw new Error(`No staged target OU found for ${serialNumber}`);
   }
+  const targetParts = record.targetOrgUnitPath.split("/").filter(Boolean);
+  let descriptionPath: string | undefined;
+  let currentPath = "";
+  for (const part of targetParts) {
+    currentPath += `/${part}`;
+    if (/^200\d{6}$/.test(part)) descriptionPath = currentPath;
+  }
   const created = service.createMissingOrgUnits(
     record.targetOrgUnitPath,
-    record.schoolName,
+    descriptionPath ? record.schoolName : undefined,
+    descriptionPath,
   );
   return { success: true, created };
 }

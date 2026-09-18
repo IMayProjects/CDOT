@@ -270,15 +270,22 @@ export class DevicesService {
     );
   }
 
-  createMissingOrgUnits(orgUnitPath: string, schoolName: string): string[] {
+  createMissingOrgUnits(
+    orgUnitPath: string,
+    schoolName?: string,
+    descriptionPath?: string,
+  ): string[] {
     const normalized = orgUnitPath.trim().replace(/\\+/g, "/");
     if (!normalized.startsWith("/")) {
       throw new Error(`Invalid organizational unit path: ${orgUnitPath}`);
     }
     const customerId = Globals.retrieveCustomerId();
-    const units = AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
+    const units =
+      AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
     const existing = new Set(
-      units.map((unit) => unit.orgUnitPath).filter((path): path is string => Boolean(path)),
+      units
+        .map((unit) => unit.orgUnitPath)
+        .filter((path): path is string => Boolean(path)),
     );
     existing.add("/");
 
@@ -288,10 +295,10 @@ export class DevicesService {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(path)) {
         const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
-          name,
+          name: name,
           parentOrgUnitPath: parentPath,
         };
-        if (/^200\d{6}$/.test(name)) ou.description = schoolName;
+        if (schoolName && descriptionPath === path) ou.description = schoolName;
         const createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
         existing.add(path);
         created.push(createdUnit.orgUnitPath || path);

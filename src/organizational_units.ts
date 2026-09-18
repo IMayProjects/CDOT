@@ -48,5 +48,6 @@ export function toTitleCase(str: string): string {
     .toLowerCase()
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(" ")
+    .replace(/or\s+tambo/gi, "OR Tambo"); // very specific replacement fix for 'OR Tambo' becomming 'Or Tambo'
 }

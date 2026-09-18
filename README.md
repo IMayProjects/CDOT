@@ -17,6 +17,17 @@ The current deployment is generated from explicit source groups:
 
 ## Timeline
 
+### 2026-09-18 20:13:24 SAST — OU recovery, path handling, diagnostics, and interactive controls
+
+- Added OU recovery after a failed migration. Recovery walks the target path segment by segment beneath `/Chromebooks`, checks each exact OU before creation, and creates only missing descendants.
+- OU lookups use slash-delimited paths without a leading slash, while `parentOrgUnitPath` uses the required leading slash. OU matching preserves case while normalizing redundant slashes and surrounding whitespace.
+- Missing EMIS OUs receive the school name as their description; other OU levels do not.
+- Expanded error logging to retain up to 20 stack lines and 8,000 characters, and added detailed recovery context to `master_log`.
+- Added retryable action states for device and school Pilot, Stage, Rush, migration, and OU recovery controls.
+- Current and Target OU values on device cards can be clicked to copy their paths to the clipboard.
+
+**Why it matters:** Failed migrations can now be recovered without blindly recreating existing OUs, while the sidebar clearly communicates operation state and preserves enough diagnostic context to troubleshoot Admin Directory errors.
+
 ### 2026-09-18 14:06:54 SAST — Direct school records, staged migrations, bulk actions, and registration safeguards
 
 - The Schools tab now reads school identity and pilot flags directly from the `schools` sheet through `SchoolRecord` and `DeviceRepository`, rather than deriving the school list only from device records.
@@ -148,6 +159,8 @@ The current deployment is generated from explicit source groups:
 - The Schools tab reads `SchoolRecord` rows from `schools` and joins matching devices for counts, pilot display, and navigation.
 - Records without a `deviceId` are treated as unregistered: they are visible for review but excluded from Stage and Rush transactions.
 - Service and UI operations write structured events through `AppLogger` to `master_log`.
+- OU recovery creates missing organizational units beneath `/Chromebooks` after a failed migration and leaves the migration itself failed until the operator retries it.
+- Logging verbosity is configurable from Settings, from verbose events through fatal-only events.
 - `onOpen` adds the **CDOT Management** menu; `showSidebar` opens `UI.html`.
 - The sidebar uses `google.script.run` to read and save the `theme` preference.
 - The sidebar filter modal queries device records by serial number, EMIS number, district, and sample status. Districts are selected via an interactive checkbox grid.

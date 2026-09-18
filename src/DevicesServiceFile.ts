@@ -79,6 +79,46 @@ export class DevicesService {
     this.repo.setDeviceTargetOU(serialNumber, targetOU);
   }
 
+  stageSchoolTargets(emisNumber: string): number {
+    const records = this.getRecordsByEmisNumber([emisNumber]);
+    let count = 0;
+    for (const record of records) {
+      const target = parseTargetOrgUnit(record);
+      if (record.serialNumber && target) {
+        this.repo.setDeviceTargetOU(record.serialNumber, target);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  rushSchoolDevices(emisNumber: string): { migrated: number; failed: number } {
+    const records = this.getRecordsByEmisNumber([emisNumber]);
+    let migrated = 0;
+    let failed = 0;
+    for (const record of records) {
+      if (!record.deviceId || !record.serialNumber || !record.targetOrgUnitPath) {
+        failed++;
+        continue;
+      }
+      try {
+        const updated = this.moveDeviceToOrgUnit(
+          record.deviceId,
+          record.targetOrgUnitPath,
+        );
+        if (updated?.orgUnitPath !== record.targetOrgUnitPath) {
+          failed++;
+          continue;
+        }
+        this.repo.updateCurrentOU(record.serialNumber, updated.orgUnitPath);
+        migrated++;
+      } catch (_) {
+        failed++;
+      }
+    }
+    return { migrated, failed };
+  }
+
   setSchoolPilotStatus(emisNumber: string, status: boolean): number {
     const records = this.getRecordsByEmisNumber([emisNumber]);
     const serials = records

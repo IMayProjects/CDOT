@@ -46,6 +46,15 @@ export function stageDeviceTarget(
   return { success: true, targetOuPath };
 }
 
+export function stageSchoolTargets(emisNumber: string) {
+  const count = DevicesService.getInstance().stageSchoolTargets(emisNumber);
+  return { success: true, count };
+}
+
+export function rushSchoolDevices(emisNumber: string) {
+  return { success: true, ...DevicesService.getInstance().rushSchoolDevices(emisNumber) };
+}
+
 export function toggleDevicePilotStatus(serialNumber: string, status: boolean) {
   DevicesService.getInstance().setDevicePilotStatus(serialNumber, status);
   return { success: true };

@@ -1336,6 +1336,12 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
               View
             </button>
+            <button class="card-action-btn" onclick="stageSchool('${escapeHtml(school.school.emis)}')">
+              Stage
+            </button>
+            <button class="card-action-btn" onclick="rushSchool('${escapeHtml(school.school.emis)}')">
+              Rush
+            </button>
           </div>
         </div>
       `;
@@ -1524,6 +1530,22 @@
         .withSuccessHandler(() => { showToast(`Staged target OU for ${serialNumber}`, 'success'); reloadDevices(); })
         .withFailureHandler((error) => showToast(`Stage failed: ${error.message || error}`, 'error'))
         .stageDeviceTarget(serialNumber, targetOuPath);
+    }
+
+    function stageSchool(emisNumber) {
+      if (typeof google === 'undefined' || !google.script) return;
+      google.script.run
+        .withSuccessHandler((result) => { showToast(`Staged ${result.count} devices`, 'success'); loadSchools(); })
+        .withFailureHandler((error) => showToast(`Stage failed: ${error.message || error}`, 'error'))
+        .stageSchoolTargets(emisNumber);
+    }
+
+    function rushSchool(emisNumber) {
+      if (typeof google === 'undefined' || !google.script) return;
+      google.script.run
+        .withSuccessHandler((result) => { showToast(`Rushed ${result.migrated} devices (${result.failed} failed)`, result.failed ? 'error' : 'success'); loadSchools(); })
+        .withFailureHandler((error) => showToast(`Rush failed: ${error.message || error}`, 'error'))
+        .rushSchoolDevices(emisNumber);
     }
 
     function toggleDevicePilot(serialNumber, status) {

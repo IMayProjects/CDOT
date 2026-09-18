@@ -31,15 +31,62 @@ Pilot-related behavior is currently hard-coded around this project’s managed-g
 
 The bound spreadsheet should contain these sheets:
 
-| Sheet | Purpose |
-| --- | --- |
-| `schools` | Authoritative EMIS, school name, district, and school pilot flag. |
-| `device_records` | Device records used by the sidebar, including registered and unregistered devices. |
-| `filtered_device_records` | Processor input for batch migration. |
-| `admin_console_device_cache` | Current OU, staged target OU, pilot state, serial number, and device ID cache. |
-| `master_log` | Created automatically for application and UI operation logs. |
+| Sheet                        | Purpose                                                                            |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `schools`                    | Authoritative EMIS, school name, district, and school pilot flag.                  |
+| `device_records`             | Device records used by the sidebar, including registered and unregistered devices. |
+| `filtered_device_records`    | Processor input for batch migration.                                               |
+| `admin_console_device_cache` | Current OU, staged target OU, pilot state, serial number, and device ID cache.     |
+| `master_log`                 | Created automatically for application and UI operation logs.                       |
 
 EMIS numbers must be stored as text consistently across the relevant sheets. Mixed text/number types can cause exact spreadsheet lookups to return `#N/A`.
+
+### Recommended spreadsheet layout and formulas
+
+The reference workbook uses these tabs:
+
+| Sheet                        | Required columns / role                                                                                                                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`                     | `Key`, `Value`; stores preferences such as `theme`, `queryJoinMode`, and `logLevel`.                                                                                                      |
+| `schools`                    | `EMIS Number`, `School Name`, `District`, `Is Piloting`. Keep EMIS values as text and pilot flags as `0 - false`/`1 - true`.                                                              |
+| `admin_console_device_cache` | `serialNumber`, `deviceId`, `COU Path`, `TOU Path`, `isSampleDevices`. This is the writable cache used for pilot, target, and verified current-OU updates.                                |
+| `school_devices`             | `EMIS Number`, `Serial Number`, `Admin Console Abbreviated`; source device-to-school mapping.                                                                                             |
+| `active_school_devices`      | Formula-derived active/pilot device mapping.                                                                                                                                              |
+| `device_records`             | `Serial Number [Abbr]`, `EMIS Number`, `School Name`, `District`, `DeviceId`, `Current OU Path`, `Target OU Path`, `IsSample`. This is the full device view, including unregistered rows. |
+| `filtered_device_records`    | `SN`, `EMIS`, `Sch`, `Dis`, `dID`, `COU`, `TOU`, `FLG`; batch processor input, limited to registered pilot devices.                                                                       |
+| `master_log`                 | Created and appended by `AppLogger`.                                                                                                                                                      |
+
+The reference workbook’s formula flow is equivalent to:
+
+```gs
+=ARRAYFORMULA(SORT(
+  FILTER(
+    school_devices!A2:C2000,
+    NOT(ISNA(school_devices!C2:C2000)) *
+    (XLOOKUP(
+      TRIM(school_devices!A2:A2000)&"",
+      TRIM(schools!A2:A1999)&"",
+      schools!D2:D1999,
+      0
+    )=1)
+  ),
+  1,
+  TRUE
+))
+
+=SORT(
+  ARRAYFORMULA(
+    FILTER(
+      device_records!A:H,
+      NOT(ISNA(device_records!E:E)) * (device_records!H:H=1)
+    )
+  ),
+  2,
+  TRUE
+)
+```
+
+The exact `device_records` formulas may be adapted to the local source columns, but they should join device/cache data to school metadata by normalized text EMIS values and expose the eight columns listed above. `filtered_device_records` should exclude rows without a `DeviceId`; those rows remain visible in the sidebar through `device_records` but are not eligible for Stage or Rush transactions.
 
 ## Workflow
 

@@ -1422,11 +1422,11 @@
           </div>
           <div class="device-ou-row">
             <span class="ou-label">Current</span>
-            <span class="ou-path copyable" title="${r.currentOrgUnitPath ? 'Click to copy' : 'No current OU'}" onclick="copyOuPath(this)">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
+            <span class="ou-path copyable" title="${r.currentOrgUnitPath}" onclick="copyOuPath(this)">${escapeHtml(r.currentOrgUnitPath || '—')}</span>
           </div>
           <div class="device-ou-row" style="border-top:none;padding-top:4px;margin-top:4px;">
             <span class="ou-label">Target</span>
-            <span class="ou-path copyable" title="${r.targetOrgUnitPath ? 'Click to copy' : 'Not staged'}" onclick="copyOuPath(this)">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
+            <span class="ou-path copyable" title="${r.targetOrgUnitPath}" onclick="copyOuPath(this)">${escapeHtml(r.targetOrgUnitPath || 'Not staged')}</span>
           </div>
           <div class="device-actions">
             <button class="migrate-btn" id="pilot-${escapeHtml(r.serialNumber)}" onclick="toggleDevicePilot('${escapeHtml(r.serialNumber)}', ${r.isSample ? 'false' : 'true'})">

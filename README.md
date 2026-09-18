@@ -161,6 +161,7 @@ The current deployment is generated from explicit source groups:
 - Service and UI operations write structured events through `AppLogger` to `master_log`.
 - OU recovery creates missing organizational units beneath `/Chromebooks` after a failed migration and leaves the migration itself failed until the operator retries it.
 - Logging verbosity is configurable from Settings, from verbose events through fatal-only events.
+- EMIS numbers must be stored as text consistently across `schools`, `device_records`, and related sheets so exact lookups do not fail because of number-versus-text type mismatches.
 - `onOpen` adds the **CDOT Management** menu; `showSidebar` opens `UI.html`.
 - The sidebar uses `google.script.run` to read and save the `theme` preference.
 - The sidebar filter modal queries device records by serial number, EMIS number, district, and sample status. Districts are selected via an interactive checkbox grid.

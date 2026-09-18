@@ -285,7 +285,7 @@ export class DevicesService {
     }
     const customerId = Globals.retrieveCustomerId();
     const canonicalPath = (path: string) =>
-      `/${path.trim().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/")}`.toLowerCase();
+      `/${path.trim().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/")}`;
     const units =
       AdminDirectory.Orgunits.list(customerId).organizationUnits || [];
     const existing = new Set(

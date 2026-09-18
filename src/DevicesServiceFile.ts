@@ -80,6 +80,10 @@ export class DevicesService {
   }
 
   stageDeviceTargetOU(serialNumber: string, targetOU: string): void {
+    const record = this.getRecordsBySerialNumber([serialNumber])[0];
+    if (!record?.deviceId) {
+      throw new Error(`Device ${serialNumber} is not registered in Admin Console`);
+    }
     AppLogger.info1(`Staging target OU for device ${serialNumber}: ${targetOU}`);
     this.repo.setDeviceTargetOU(serialNumber, targetOU);
   }
@@ -89,6 +93,7 @@ export class DevicesService {
     const records = this.getRecordsByEmisNumber([emisNumber]);
     let count = 0;
     for (const record of records) {
+      if (!record.deviceId) continue;
       const target = parseTargetOrgUnit(record);
       if (record.serialNumber && target) {
         this.repo.setDeviceTargetOU(record.serialNumber, target);
@@ -106,7 +111,6 @@ export class DevicesService {
     let failed = 0;
     for (const record of records) {
       if (!record.deviceId || !record.serialNumber || !record.targetOrgUnitPath) {
-        failed++;
         continue;
       }
       try {

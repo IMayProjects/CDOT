@@ -1355,7 +1355,7 @@
       if (!records.length) return '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg><p>No devices found</p></div>';
       return records.map((r) => {
         const isSynced = r.currentOrgUnitPath === r.targetOrgUnitPath;
-        const needsMigration = r.targetOrgUnitPath && !isSynced;
+        const needsMigration = r.deviceId && r.targetOrgUnitPath && !isSynced;
         const suggestedTarget = r.suggestedTargetOrgUnitPath || '';
         return `
         <div class="card fade-in">
@@ -1366,6 +1366,7 @@
                 <span class="meta-tag">${escapeHtml(r.schoolName || 'Unknown school')}</span>
                 <span class="meta-tag">${escapeHtml(r.district || 'No district')}</span>
                 ${r.isSample ? '<span class="meta-tag" style="color:var(--accent)">Sample</span>' : ''}
+                ${!r.deviceId ? '<span class="meta-tag" style="color:#f59e0b">Unregistered</span>' : ''}
                 ${isSynced
                   ? '<span class="ou-match-badge synced">Synced</span>'
                   : (r.targetOrgUnitPath ? '<span class="ou-match-badge pending">Pending</span>' : '')}
@@ -1385,7 +1386,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 22h20L12 2z"></path></svg>
               ${r.isSample ? 'Un-Pilot' : 'Set Pilot'}
             </button>
-            ${suggestedTarget && suggestedTarget !== r.targetOrgUnitPath ? `
+            ${r.deviceId && suggestedTarget && suggestedTarget !== r.targetOrgUnitPath ? `
             <button class="migrate-btn" id="stage-${escapeHtml(r.serialNumber)}" onclick="stageDevice('${escapeHtml(r.serialNumber)}', '${escapeHtml(suggestedTarget)}')">
               Stage
             </button>` : ''}

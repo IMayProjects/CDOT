@@ -273,12 +273,12 @@ export class DevicesService {
     for (const name of normalized.split("/").filter(Boolean)) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(path)) {
-        AdminDirectory.Orgunits.insert(
-          { name, orgUnitPath: path, parentOrgUnitPath: parentPath },
+        const createdUnit = AdminDirectory.Orgunits.insert(
+          { name, parentOrgUnitPath: parentPath },
           customerId,
         );
         existing.add(path);
-        created.push(path);
+        created.push(createdUnit.orgUnitPath || path);
       }
       parentPath = path;
     }

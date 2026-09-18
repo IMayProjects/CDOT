@@ -1,4 +1,5 @@
 export const MasterLogSheetName = "master_log";
+import { PreferencesService, PreferenceKeys } from "./Config";
 
 export enum LogLevel {
   INFO1 = "Info1",
@@ -7,6 +8,14 @@ export enum LogLevel {
   ERROR = "Error",
   FATAL = "Fatal",
 }
+
+const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
+  [LogLevel.INFO1]: 1,
+  [LogLevel.INFO2]: 2,
+  [LogLevel.WARN]: 3,
+  [LogLevel.ERROR]: 4,
+  [LogLevel.FATAL]: 5,
+};
 
 export class AppLogger {
   private static getSheet(): GoogleAppsScript.Spreadsheet.Sheet | null {
@@ -23,6 +32,9 @@ export class AppLogger {
   }
 
   private static log(level: LogLevel, message: string, error?: any) {
+    const configured = PreferencesService.getInstance().getPreference(PreferenceKeys.LOG_LEVEL) || LogLevel.INFO1;
+    const threshold = LOG_LEVEL_PRIORITY[configured as LogLevel] || LOG_LEVEL_PRIORITY[LogLevel.INFO1];
+    if (LOG_LEVEL_PRIORITY[level] < threshold) return;
     const sheet = this.getSheet();
     if (!sheet) return;
 

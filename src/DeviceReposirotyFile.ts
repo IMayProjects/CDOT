@@ -13,6 +13,7 @@ import {
   SchoolRecordColumn,
   SchoolRecordTitleRow,
 } from "./SchoolRecordFile";
+import { AppLogger } from "./logger";
 
 export class DeviceRepository {
   private static instance: DeviceRepository;
@@ -82,6 +83,7 @@ export class DeviceRepository {
         isSample: Boolean(row[DeviceRecordsSheetColumn.IS_SAMPLE] == "1"),
       });
     }
+    AppLogger.info2(`Loaded ${records.length} processor records`);
     return records;
   }
   /**
@@ -116,10 +118,12 @@ export class DeviceRepository {
         isSample: Boolean(row[DeviceRecordsSheetColumn.IS_SAMPLE] == "1"),
       });
     }
+    AppLogger.info2(`Loaded ${records.length} device records from ${DeviceRecordsSheetName}`);
     return records;
   }
 
   updateCurrentOU(serialNumber: string, orgUnitPath: string) {
+    AppLogger.info2(`Updating cached current OU for ${serialNumber}: ${orgUnitPath}`);
     const sheet = this.getAcSheet();
     const data = sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
@@ -138,6 +142,7 @@ export class DeviceRepository {
 
   setDeviceTargetOUs(serialNumbers: string[], orgUnitPath: string) {
     if (serialNumbers.length === 0) return;
+    AppLogger.info2(`Updating cached target OU for ${serialNumbers.length} devices: ${orgUnitPath}`);
     const sheet = this.getAcSheet();
     const data = sheet.getDataRange().getValues();
     const serialSet = new Set(serialNumbers);
@@ -157,6 +162,7 @@ export class DeviceRepository {
   }
   setPilotStatus(serialNumbers: string[], status: boolean) {
     if (serialNumbers.length === 0) return;
+    AppLogger.info2(`Updating cached pilot status for ${serialNumbers.length} devices: ${status}`);
     const acSheet = this.getAcSheet();
     const data = acSheet.getDataRange().getValues();
     const serialSet = new Set(serialNumbers);
@@ -182,7 +188,7 @@ export class DeviceRepository {
 
   getAllSchoolRecords(): SchoolRecord[] {
     const data = this.getSchoolsSheet().getDataRange().getValues();
-    return data.slice(SchoolRecordTitleRow)
+    const records = data.slice(SchoolRecordTitleRow)
       .filter((row) => row[SchoolRecordColumn.EMIS])
       .map((row) => ({
         emis: String(row[SchoolRecordColumn.EMIS] || "").trim(),
@@ -190,9 +196,12 @@ export class DeviceRepository {
         district: String(row[SchoolRecordColumn.DISTRICT] || ""),
         isPilot: Boolean(row[SchoolRecordColumn.PILOT_FLAG] == "1" || row[SchoolRecordColumn.PILOT_FLAG] === true),
       }));
+    AppLogger.info2(`Loaded ${records.length} school records`);
+    return records;
   }
 
   setSchoolPilotFlag(emisNumber: string, status: boolean): void {
+    AppLogger.info2(`Writing school pilot flag for ${emisNumber}: ${status}`);
     const sheet = this.getSchoolsSheet();
     const data = sheet.getDataRange().getValues();
     for (let i = SchoolRecordTitleRow; i < data.length; i++) {

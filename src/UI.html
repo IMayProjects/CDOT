@@ -958,6 +958,19 @@
       </div>
       <div class="pref-item">
         <div>
+          <div class="pref-label">Logging Level</div>
+          <div class="pref-desc">Minimum event severity written to master_log</div>
+        </div>
+        <select id="log-level-select" onchange="onLogLevelChange(event)">
+          <option value="Info1">Verbose</option>
+          <option value="Info2">Standard</option>
+          <option value="Warn">Warnings</option>
+          <option value="Error">Errors</option>
+          <option value="Fatal">Fatal only</option>
+        </select>
+      </div>
+      <div class="pref-item">
+        <div>
           <div class="pref-label">Filter Logic</div>
           <div class="pref-desc">How enabled filters combine</div>
         </div>
@@ -1048,10 +1061,12 @@
           .withSuccessHandler((config) => {
             const theme = config.theme || 'dark';
             const queryJoinMode = config.queryJoinMode || 'AND';
+            const logLevel = config.logLevel || 'Info1';
             applyTheme(theme);
             document.getElementById('theme-select').value = theme;
             document.getElementById('query-join-mode').value = queryJoinMode;
             document.getElementById('filter-join-mode').value = queryJoinMode;
+            document.getElementById('log-level-select').value = logLevel;
           })
           .getClientConfig();
 
@@ -1104,6 +1119,12 @@
       document.getElementById('filter-join-mode').value = joinMode;
       if (typeof google !== 'undefined' && google.script) {
         google.script.run.saveClientConfig('queryJoinMode', joinMode);
+      }
+    }
+
+    function onLogLevelChange(e) {
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run.saveClientConfig('logLevel', e.target.value);
       }
     }
 

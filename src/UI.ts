@@ -102,6 +102,7 @@ export function listSchools() {
  * Creates the menu item to launch the sidebar
  */
 export function onOpen() {
+  AppLogger.info1("UI menu opened");
   SpreadsheetApp.getUi()
     .createMenu("CDOT Management")
     .addItem("Open Sidebar panel", "showSidebar")
@@ -112,6 +113,7 @@ export function onOpen() {
  * Opens the sidebar with the tabbed UI
  */
 export function showSidebar() {
+  AppLogger.info1("Sidebar requested");
   const html = HtmlService.createHtmlOutputFromFile("UI")
     .setTitle("CDOT Control Panel")
     .setWidth(300); // Standard sidebar width

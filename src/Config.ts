@@ -22,11 +22,13 @@ export function getDistrictsDef() {
 export enum PreferenceKeys {
   THEME = "theme",
   QUERY_JOIN_MODE = "queryJoinMode",
+  LOG_LEVEL = "logLevel",
 }
 
 const DEFAULT_CONFIG: Record<string, string> = {
   [PreferenceKeys.THEME]: "dark",
   [PreferenceKeys.QUERY_JOIN_MODE]: "AND",
+  [PreferenceKeys.LOG_LEVEL]: "Info1",
 };
 
 export class PreferencesService {

@@ -291,6 +291,11 @@ export class DevicesService {
         .map((unit) => unit.orgUnitPath)
         .filter((path): path is string => Boolean(path)),
     );
+    const unitIds = new Map(
+      units
+        .filter((unit) => unit.orgUnitPath && unit.orgUnitId)
+        .map((unit) => [unit.orgUnitPath as string, unit.orgUnitId as string]),
+    );
     existing.add(rootPath);
 
     const created: string[] = [];
@@ -299,13 +304,16 @@ export class DevicesService {
     for (const name of parts) {
       const path = parentPath === "/" ? `/${name}` : `${parentPath}/${name}`;
       if (!existing.has(path)) {
+        const parentOrgUnitId = unitIds.get(parentPath);
+        if (!parentOrgUnitId) throw new Error(`Parent OU ID not found for ${parentPath}`);
         const ou: GoogleAppsScript.AdminDirectory.Schema.OrgUnit = {
-          name: name,
+          name,
+          parentOrgUnitId,
         };
-        ou.parentOrgUnitPath = parentPath;
         if (schoolName && descriptionPath === path) ou.description = schoolName;
         const createdUnit = AdminDirectory.Orgunits.insert(ou, customerId);
         existing.add(path);
+        if (createdUnit.orgUnitId) unitIds.set(path, createdUnit.orgUnitId);
         created.push(createdUnit.orgUnitPath || path);
       }
       parentPath = path;

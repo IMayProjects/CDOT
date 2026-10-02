@@ -173,3 +173,7 @@ Error traces retain up to 20 stack lines and 8,000 characters. UI success and fa
 ## Historical work log
 
 Development milestones and detailed implementation notes are preserved in [WORK_LOG.md](WORK_LOG.md).
+
+## Development Disclosure
+
+This project was developed with the assistance of AI coding tools (e.g., Cursor, Claude, ChatGPT, GitHub Copilot). All AI-generated or assisted code was reviewed, tested, and verified for accuracy and functionality.
